@@ -1,0 +1,14 @@
+application: mybrewcellar
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+- url: /mycellar/.*
+  script: _go_app
+  login: required
+- url: /.*
+  script: _go_app
