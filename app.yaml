@@ -7,7 +7,7 @@ handlers:
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
-- url: /mycellar/.*
+- url: /mycellar
   script: _go_app
   login: required
 - url: /.*

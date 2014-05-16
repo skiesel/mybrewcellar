@@ -7,20 +7,28 @@ import (
 )
 
 type Page struct {
-	Title string
-	Username string
+	Title    string
+	Logout	 string
+	Account  *Account
 }
 
 func NewPage(r *http.Request) Page {
-	newPage := Page {
+	newPage := Page{
 		Title : "Page Title",
-		Username : "Guest",
+		Logout : "",
+		Account : GuestAccount(),
 	}
 
 	c := appengine.NewContext(r)
 	usr := user.Current(c)
+
 	if usr != nil {
-		newPage.Username = usr.String()
+		logout, _ := user.LogoutURL(c, "/")
+		newPage.Logout = logout
+		newPage.Account = GetAccount(usr.Email)
+		if newPage.Account == nil {
+			newPage.Account = NewAccount("NewUser", usr.Email)
+		}
 	}
 
 	return newPage

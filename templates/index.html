@@ -1,5 +1,5 @@
 {{template "top.html" .}}
 
-<h1>Welcome {{.Username}}!</h1>
+<h1>Welcome {{ .Account.GetUsername }}!</h1>
 
 {{template "bottom.html" .}}

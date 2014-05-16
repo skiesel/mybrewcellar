@@ -1,5 +1,5 @@
 {{template "top.html" .}}
 
-<h1>Welcome {{.Username}} to your cellar!</h1>
+<h1>Welcome {{ .Account.GetUsername }} to your cellar!</h1>
 
 {{template "bottom.html" .}}

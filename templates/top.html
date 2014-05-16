@@ -3,4 +3,10 @@
 		<title>{{.Title}}</title>
 	</head>
 	<body>
-		<div class="links"><a href="/">home</a>&nbsp;<a href="/mycellar">my cellar</a></div>
+		<div class="links">
+			<a href="/">home</a>&nbsp;
+			<a href="/mycellar">my cellar</a>&nbsp;
+			{{ if.Logout }}
+			<a href="{{ .Logout }}">logout</a>&nbsp;
+			{{ end }}
+		</div>

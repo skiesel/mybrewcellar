@@ -15,4 +15,11 @@ func mycellar(w http.ResponseWriter, r *http.Request) {
 
 	pageTemplate := BuildTemplate(MYCELLAR)
 	pageTemplate.Execute(w, page)
+
+	account := models.GetAccount("test@test.com")
+	if account == nil {
+		account = models.NewAccount("username", "test@test.com")
+	}
+
+	account.DeleteCellar("NOT A CELLAR")
 }
