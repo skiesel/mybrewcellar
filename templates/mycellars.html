@@ -13,12 +13,12 @@
 	<input type="submit" value="add"/>
 </form>
 
-{{ range .Account.GetCellars }}
+{{ range .Account.Cellars }}
 
-	<h2><a href="../cellar?id={{ .GetId }}">{{ .GetName }}</a></h2>
+	<h2><a href="../cellar?id={{ .ID }}">{{ .Name }}</a></h2>
 	<ul>
-	{{ range .GetBeers }}
-		<li>{{ .GetName }}/li>
+	{{ range .Beers }}
+		<li>{{ .Name }}</li>
 	{{ end }}
 	</ul>
 

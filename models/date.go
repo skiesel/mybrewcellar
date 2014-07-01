@@ -7,7 +7,7 @@ import (
 )
 
 type Date struct {
-	date time.Time
+	Date time.Time
 }
 
 func Now() *Date {
@@ -18,7 +18,7 @@ func Now() *Date {
 	}
 	time := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, utc)
 	return &Date{
-		date: time,
+		Date: time,
 	}
 }
 
@@ -45,6 +45,11 @@ func ParseDate(date string) *Date {
 	}
 	time := time.Date(year, time.Month(month), day, 0, 0, 0, 0, utc)
 	return &Date{
-		date: time,
+		Date: time,
 	}
+}
+
+func (date *Date)ToString() string {
+	const layout = "Jan 2, 2006"
+	return date.Date.Format(layout)
 }

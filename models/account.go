@@ -6,92 +6,76 @@ import (
 )
 
 type Account struct {
-	user    *User
-	nextCellarId int
-	cellars map[string]*Cellar
-	cellarsById map[int]*Cellar
+	User    *User
+	NextCellarID int
+	Cellars map[string]*Cellar
+	CellarsByID map[int]*Cellar
 }
 
 func (account Account) GetUsername() string {
-	return account.user.userid
+	return account.User.UserID
 }
 
 func GuestAccount() *Account {
 	return &Account{
-		user: &User{
-			userid: "Guest",
-			email:  "",
+		User: &User{
+			UserID: "Guest",
+			Email:  "",
 		},
-		nextCellarId: 0,
-		cellars: map[string]*Cellar{},
+		NextCellarID: 0,
+		Cellars: map[string]*Cellar{},
 	}
 }
 
 func NewAccount(userid, email string) *Account {
-	lts := &Cellar{
-				id: 0,
-				nextBeerId: 0,
-				name:  "Long Term Storage",
-				beers: []*Beer{},
-			}
-	fridge := &Cellar{
-				id: 1,
-				nextBeerId: 0,
-				name:  "Refrigerator",
-				beers: []*Beer{},
-			}
-
-	return &Account{
-		user: &User{
-			userid: userid,
-			email:  email,
+	newAccount := &Account{
+		User: &User{
+			UserID: userid,
+			Email:  email,
 		},
-		nextCellarId: 2,
-		cellars: map[string]*Cellar{
-			"Long Term Storage": lts,
-			"Refrigerator": fridge,
-		},
-		cellarsById: map[int]*Cellar{
-			0:lts,
-			1:fridge,
-		},
+		NextCellarID: 0,
+		Cellars: map[string]*Cellar{},
+		CellarsByID: map[int]*Cellar{},
 	}
+
+	newAccount.AddCellar("Long Term Storage")
+	newAccount.AddCellar("Refrigerator")
+
+	return newAccount
 }
 
 func GetAccount(email string) *Account {
 	return nil
 }
 
-func (account Account) AddCellar(cellarName string) error {
-	if account.cellars[cellarName] != nil {
+func (account *Account) AddCellar(cellarName string) error {
+	if account.Cellars[cellarName] != nil {
 		return errors.New("Cellar Already Exists")
 	}
 
-	account.cellars[cellarName] = &Cellar{
-		name:  cellarName,
-		beers: []*Beer{},
+	account.Cellars[cellarName] = &Cellar{
+		ID: account.NextCellarID,
+		Name:  cellarName,
+		NextBeerID: 0,
+		Beers: []*Beer{},
 	}
 
-	account.cellarsById[account.nextCellarId] = account.cellars[cellarName]
-	account.nextCellarId++
+	account.CellarsByID[account.NextCellarID] = account.Cellars[cellarName]
+	account.NextCellarID++
 
 	return nil
 }
 
-func (account Account) GetCellars() map[string]*Cellar {
-	return account.cellars
-}
-
 func (account Account) GetCellarById(idStr string) *Cellar {
 	id, _ := strconv.Atoi(idStr)
-	return account.cellarsById[id]
+	return account.CellarsByID[id]
 }
 
 func (account Account) DeleteCellar(cellarName string) {
-	cellar, exists := account.cellars[cellarName]
+	cellar, exists := account.Cellars[cellarName]
 	if(exists) {
-		delete(account.cellarsById, cellar.id)
-		delete(account.cellars, cellarName)
+		delete(account.CellarsByID, cellar.ID)
+		delete(account.Cellars, cellarName)
 	}
 }
 

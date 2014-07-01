@@ -7,10 +7,20 @@
 <script>
 	$(document).ready(function() {
     $(".datepicker").datepicker();
+		$("#quantity-slider").slider({
+			range: "min",
+			value: 1,
+			min: 1,
+			max: 100,
+			slide: function( event, ui ) {
+				$("#quantity").val(ui.value);
+			}
+		});
+		$("#quantity").val($("#quantity-slider").slider("value"));
 	});
 </script>
 
-<h1>{{ .Cellar.GetName }}</h1>
+<h1>{{ .Cellar.Name }}</h1>
 
 <h2>Add a new beer</h2>
 
@@ -21,11 +31,18 @@
 {{ with .Cellar }}
 
 <form method="POST" action="cellar">
-	<input type="hidden" id="cellar" name="cellar" value="{{ .GetId }}"/>
+	<input type="hidden" id="cellar" name="cellar" value="{{ .ID }}"/>
 	<table>
 		<tr>
 			<td>name:</td>
 			<td><input type="text" id="newbeer" name="newbeer" /></td>
+		</tr>
+		<tr>
+			<td>quantity:</td>
+			<td>
+				<input type="text" readonly id="quantity" name="quantity" />
+				<div id="quantity-slider"></div>
+			</td>
 		</tr>
 		<tr>
 			<td>notes:</td>
@@ -33,15 +50,15 @@
 		</tr>
 		<tr>
 			<td>brewed on:</td>
-			<td><input type="text" class="datepicker" id="brewed" name="brewed"></td>
+			<td><input type="text" readonly class="datepicker" id="brewed" name="brewed"></td>
 		</tr>
 		<tr>
 			<td>added on:</td>
-			<td><input type="text" class="datepicker" id="added" name="added"></td>
+			<td><input type="text" readonly class="datepicker" id="added" name="added"></td>
 		</tr>
 		<tr>
 			<td>consumed on:</td>
-			<td><input type="text" class="datepicker" id="consume" name="consumed"></td>
+			<td><input type="text" readonly class="datepicker" id="consume" name="consumed"></td>
 		</tr>
 		<tr>
 			<td colspan="2"><input type="submit" value="add"/></td>
@@ -50,8 +67,17 @@
 </form>
 
 	<ul>
-	{{ range .GetBeers }}
-		<li>{{ .GetName }}/li>
+	{{ range .Beers }}
+		<li>{{ .Name }}
+			<ul>
+				<li>Quantity: {{ .Quantity }}</li>
+				<li>Notes: &quot;{{ .Notes }}&quot;</li>
+				<li>Brewed: {{ if .Brewed }} {{ .Brewed.ToString }} {{ end }}</li>
+				<li>Added: {{ .Added.ToString }}</li>
+				<li>Age: {{ .GetAgeString }}</li>
+				<li>Consumed: {{ .GetConsumedString }} </li>
+			</ul>
+		</li>
 	{{ end }}
 	</ul>
 

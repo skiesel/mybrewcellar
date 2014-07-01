@@ -1,26 +1,31 @@
 package models
 
+import (
+	"fmt"
+)
+
 type Cellar struct {
-	id int
-	nextBeerId int
-	name  string
-	beers []*Beer
+	ID int
+	NextBeerID int
+	Name  string
+	Beers []*Beer
 }
 
 type Beer struct {
-	name     string
-	notes    string
-	brewed   *Date
-	added    *Date
-	consumed *Date
+	Name     string
+	Notes    string
+	Brewed   *Date
+	Added    *Date
+	Consumed []*Date
+	Quantity int
 }
 
-func (cellar Cellar) addBeer(name, notes, brewed, added string) {
-	beer := newBeer(name, notes, brewed, added)
-	cellar.beers = append(cellar.beers, beer)
+func (cellar Cellar) addBeer(name, notes, brewed, added string, quantity int) {
+	beer := newBeer(name, notes, brewed, added, quantity)
+	cellar.Beers = append(cellar.Beers, beer)
 }
 
-func newBeer(name, notes, brewed, added string) *Beer {
+func newBeer(name, notes, brewed, added string, quantity int) *Beer {
 	var brewedDate *Date
 	if brewed != "" {
 		brewedDate = ParseDate(brewed)
@@ -32,25 +37,72 @@ func newBeer(name, notes, brewed, added string) *Beer {
 	}
 
 	return &Beer{
-		name:   name,
-		notes:  notes,
-		brewed: brewedDate,
-		added:  addedDate,
+		Name:   name,
+		Notes:  notes,
+		Brewed: brewedDate,
+		Added:  addedDate,
+		Consumed: []*Date{},
+		Quantity: quantity,
 	}
 }
 
-func (cellar *Cellar)GetName() string {
-	return cellar.name
+func (cellar *Cellar)AddBeer(beer *Beer) {
+	cellar.Beers = append(cellar.Beers, beer)
 }
 
-func (cellar *Cellar)GetId() int {
-	return cellar.id
+func (beer *Beer)GetConsumedString() string {
+	beer.Consumed = append(beer.Consumed, Now())
+	beer.Consumed = append(beer.Consumed, Now())
+	beer.Consumed = append(beer.Consumed, Now())
+	str := ""
+	for index, date := range beer.Consumed {
+		if(index == 0) {
+			str = date.ToString()
+		} else {
+			str = fmt.Sprintf("%s; %s", str, date.ToString())
+		}
+	}
+	return str
 }
 
-func (cellar *Cellar)GetBeers() []*Beer {
-	return cellar.beers
-}
+func (beer *Beer)GetAgeString() string {
+	startDate := beer.Brewed
+	if(startDate == nil) {
+		startDate = beer.Added
+	}
+	today := Now()
+	difference := today.Date.Sub(startDate.Date)
 
-func (beer *Beer)GetName() string {
-	return beer.name
+	days := int(difference.Hours() / 24)
+	months := int(days / (365/ 12))
+	years := int(months / 12)
+
+	days -= int(months * (365/ 12))
+	months -= int(years * 12)
+
+	ageStr := ""
+
+	if(years > 0) {
+		if(years > 1) {
+			ageStr = fmt.Sprintf("%s %d years", ageStr, years)
+		} else {
+			ageStr = fmt.Sprintf("%s %d year", ageStr, years)
+		}
+	}
+	if(months > 0) {
+		if(months > 1) {
+			ageStr = fmt.Sprintf("%s %d months", ageStr, months)
+		} else {
+			ageStr = fmt.Sprintf("%s %d month", ageStr, months)
+		}
+	}
+	if(days > 0) {
+		if(days > 1) {
+			ageStr = fmt.Sprintf("%s %d days", ageStr, days)	
+		} else {
+			ageStr = fmt.Sprintf("%s %d day", ageStr, days)	
+		}
+		
+	}
+	return ageStr
 }

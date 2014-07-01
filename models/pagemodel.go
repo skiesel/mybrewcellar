@@ -30,8 +30,9 @@ func NewPage(r *http.Request) Page {
 		newPage.Account = GetAccount(usr.Email)
 		if newPage.Account == nil {
 			newPage.Account = NewAccount("NewUser", usr.Email)
+			newPage.Account.CellarsByID[0].AddBeer(newBeer("Sierra Nevada Pale Ale", "", "2013-07-01", "", 1))
+			newPage.Account.CellarsByID[0].AddBeer(newBeer("Sierra Nevada Bigfoot Barleywine", "", "2014-06-01", "", 10))
 		}
 	}
-
 	return newPage
 }
