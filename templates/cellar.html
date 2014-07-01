@@ -1,0 +1,60 @@
+{{template "top.html" .}}
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+<script>
+	$(document).ready(function() {
+    $(".datepicker").datepicker();
+	});
+</script>
+
+<h1>{{ .Cellar.GetName }}</h1>
+
+<h2>Add a new beer</h2>
+
+{{ if ne .Error "" }}
+	<p>{{ .Error }}</p>	
+{{ end }}
+
+{{ with .Cellar }}
+
+<form method="POST" action="cellar">
+	<input type="hidden" id="cellar" name="cellar" value="{{ .GetId }}"/>
+	<table>
+		<tr>
+			<td>name:</td>
+			<td><input type="text" id="newbeer" name="newbeer" /></td>
+		</tr>
+		<tr>
+			<td>notes:</td>
+			<td><textarea id="notes" name="notes"></textarea></td>
+		</tr>
+		<tr>
+			<td>brewed on:</td>
+			<td><input type="text" class="datepicker" id="brewed" name="brewed"></td>
+		</tr>
+		<tr>
+			<td>added on:</td>
+			<td><input type="text" class="datepicker" id="added" name="added"></td>
+		</tr>
+		<tr>
+			<td>consumed on:</td>
+			<td><input type="text" class="datepicker" id="consume" name="consumed"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><input type="submit" value="add"/></td>
+		</tr>		
+	</table>
+</form>
+
+	<ul>
+	{{ range .GetBeers }}
+		<li>{{ .GetName }}/li>
+	{{ end }}
+	</ul>
+
+{{ end }}
+
+{{template "bottom.html" .}}

@@ -6,7 +6,8 @@ import (
 
 const (
 	INDEX    = "index.html"
-	MYCELLAR = "mycellar.html"
+	MYCELLARS = "mycellars.html"
+	CELLAR = "cellar.html"
 )
 
 func BuildTemplate(templateName string) *template.Template {

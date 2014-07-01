@@ -1,0 +1,27 @@
+{{template "top.html" .}}
+
+<h1>Welcome {{ .Account.GetUsername }} to your cellars!</h1>
+
+<h2>Add a new cellar</h2>
+
+{{ if ne .Error "" }}
+	<p>{{ .Error }}</p>	
+{{ end }}
+
+<form method="POST" action="mycellars">
+	<input type="text" id="newcellar" name="newcellar" />
+	<input type="submit" value="add"/>
+</form>
+
+{{ range .Account.GetCellars }}
+
+	<h2><a href="../cellar?id={{ .GetId }}">{{ .GetName }}</a></h2>
+	<ul>
+	{{ range .GetBeers }}
+		<li>{{ .GetName }}/li>
+	{{ end }}
+	</ul>
+
+{{ end }}
+
+{{template "bottom.html" .}}

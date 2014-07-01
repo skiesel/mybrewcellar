@@ -10,6 +10,8 @@ type Page struct {
 	Title    string
 	Logout	 string
 	Account  *Account
+	Cellar	 *Cellar
+	Error 	 string
 }
 
 func NewPage(r *http.Request) Page {

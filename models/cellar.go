@@ -1,6 +1,8 @@
 package models
 
 type Cellar struct {
+	id int
+	nextBeerId int
 	name  string
 	beers []*Beer
 }
@@ -35,4 +37,20 @@ func newBeer(name, notes, brewed, added string) *Beer {
 		brewed: brewedDate,
 		added:  addedDate,
 	}
+}
+
+func (cellar *Cellar)GetName() string {
+	return cellar.name
+}
+
+func (cellar *Cellar)GetId() int {
+	return cellar.id
+}
+
+func (cellar *Cellar)GetBeers() []*Beer {
+	return cellar.beers
+}
+
+func (beer *Beer)GetName() string {
+	return beer.name
 }
