@@ -5,9 +5,11 @@ import (
 )
 
 const (
-	INDEX    = "index.html"
+	INDEX     = "index.html"
 	MYCELLARS = "mycellars.html"
-	CELLAR = "cellar.html"
+	CELLAR    = "cellar.html"
+	ACCOUNT   = "account.html"
+	BEER      = "beer.html"
 )
 
 func BuildTemplate(templateName string) *template.Template {

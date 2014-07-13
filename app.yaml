@@ -7,10 +7,27 @@ handlers:
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
+- url: /js
+  static_dir: js
+- url: /css
+  static_dir: css
+- url: /images
+  static_dir: images
+- url: /fonts
+  static_dir: fonts
+- url: /myaccount
+  script: _go_app
+  login: required
 - url: /mycellars
   script: _go_app
   login: required
 - url: /cellar
+  script: _go_app
+  login: required
+- url: /beer
+  script: _go_app
+  login: required
+- url: /api/* 
   script: _go_app
   login: required
 - url: /.*

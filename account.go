@@ -7,13 +7,12 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/", index)
+	http.HandleFunc("/myaccount", myaccount)
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
+func myaccount(w http.ResponseWriter, r *http.Request) {
 	page := models.NewPage(r)
-	page.Title = "Home"
-
-	pageTemplate := BuildTemplate(INDEX)
+	page.Title = "My Account"
+	pageTemplate := BuildTemplate(ACCOUNT)
 	pageTemplate.Execute(w, page)
 }

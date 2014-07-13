@@ -2,27 +2,43 @@ package models
 
 import (
 	"fmt"
+	"strings"
+	"strconv"
 )
 
 type Cellar struct {
-	ID int
+	ID         int
 	NextBeerID int
-	Name  string
-	Beers []*Beer
+	Name       string
+	Beers      map[string]*Beer
+	BeersByID  map[int]*Beer
 }
 
 type Beer struct {
-	Name     string
-	Notes    string
-	Brewed   *Date
-	Added    *Date
-	Consumed []*Date
-	Quantity int
+	ID            int
+	Name          string
+	Notes         string
+	Brewed        *Date
+	Added         *Date
+	Quantity      int
+	NextTastingID int
+	Tastings      []*Tasting
+	TastingsByID  map[int]*Tasting
 }
 
-func (cellar Cellar) addBeer(name, notes, brewed, added string, quantity int) {
-	beer := newBeer(name, notes, brewed, added, quantity)
-	cellar.Beers = append(cellar.Beers, beer)
+type Tasting struct {
+	ID    int
+	Rating int
+	Notes string
+	Date  *Date
+}
+
+func (beer *Beer) GetBirthday() *Date {
+	birthday := beer.Brewed
+	if birthday == nil {
+		birthday = beer.Added
+	}
+	return birthday
 }
 
 func newBeer(name, notes, brewed, added string, quantity int) *Beer {
@@ -37,72 +53,86 @@ func newBeer(name, notes, brewed, added string, quantity int) *Beer {
 	}
 
 	return &Beer{
-		Name:   name,
-		Notes:  notes,
-		Brewed: brewedDate,
-		Added:  addedDate,
-		Consumed: []*Date{},
+		ID: 0,
+		Name:     name,
+		Notes:    notes,
+		Brewed:   brewedDate,
+		Added:    addedDate,
+		Tastings: []*Tasting{},
 		Quantity: quantity,
 	}
 }
 
-func (cellar *Cellar)AddBeer(beer *Beer) {
-	cellar.Beers = append(cellar.Beers, beer)
+func (cellar *Cellar) GetBeerByID(idStr string) *Beer {
+	id, _ := strconv.Atoi(idStr)
+	return cellar.BeersByID[id]
 }
 
-func (beer *Beer)GetConsumedString() string {
-	beer.Consumed = append(beer.Consumed, Now())
-	beer.Consumed = append(beer.Consumed, Now())
-	beer.Consumed = append(beer.Consumed, Now())
-	str := ""
-	for index, date := range beer.Consumed {
-		if(index == 0) {
-			str = date.ToString()
-		} else {
-			str = fmt.Sprintf("%s; %s", str, date.ToString())
+func (cellar *Cellar) AddBeer(beer *Beer) {
+	cellar.Beers[beer.Name] = beer
+	cellar.BeersByID[beer.ID] = beer
+}
+
+func (cellar Cellar) addBeer(name, notes, brewed, added string, quantity int) {
+	cellar.AddBeer(newBeer(name, notes, brewed, added, quantity))
+}
+
+func (beer *Beer) GetAverageRating() float64 {
+	average := 0.0
+	tastingCount := len(beer.Tastings)
+	if tastingCount > 0 {
+		for _, tasting := range beer.Tastings {
+			average += float64(tasting.Rating)
 		}
+		average /= float64(tastingCount)
 	}
-	return str
+	return average
 }
 
-func (beer *Beer)GetAgeString() string {
-	startDate := beer.Brewed
-	if(startDate == nil) {
-		startDate = beer.Added
-	}
-	today := Now()
-	difference := today.Date.Sub(startDate.Date)
+func (beer *Beer) GetTastingAge(tasting *Tasting) string {
+	birthday := beer.GetBirthday()
+	return getDurationString(birthday, tasting.Date)
+}
+
+func getDurationString(from, to *Date) string {
+	difference := to.Date.Sub(from.Date)
 
 	days := int(difference.Hours() / 24)
-	months := int(days / (365/ 12))
+	months := int(days / (365 / 12))
 	years := int(months / 12)
 
-	days -= int(months * (365/ 12))
+	days -= int(months * (365 / 12))
 	months -= int(years * 12)
 
 	ageStr := ""
 
-	if(years > 0) {
-		if(years > 1) {
+	if years > 0 {
+		if years > 1 {
 			ageStr = fmt.Sprintf("%s %d years", ageStr, years)
 		} else {
 			ageStr = fmt.Sprintf("%s %d year", ageStr, years)
 		}
 	}
-	if(months > 0) {
-		if(months > 1) {
+	if months > 0 {
+		if months > 1 {
 			ageStr = fmt.Sprintf("%s %d months", ageStr, months)
 		} else {
 			ageStr = fmt.Sprintf("%s %d month", ageStr, months)
 		}
 	}
-	if(days > 0) {
-		if(days > 1) {
-			ageStr = fmt.Sprintf("%s %d days", ageStr, days)	
+	if days > 0 {
+		if days > 1 {
+			ageStr = fmt.Sprintf("%s %d days", ageStr, days)
 		} else {
-			ageStr = fmt.Sprintf("%s %d day", ageStr, days)	
+			ageStr = fmt.Sprintf("%s %d day", ageStr, days)
 		}
-		
+
 	}
-	return ageStr
+	return strings.TrimSpace(ageStr)
+}
+
+func (beer *Beer) GetAgeString() string {
+	birthday := beer.GetBirthday()
+	today := Now()
+	return getDurationString(birthday, today)
 }

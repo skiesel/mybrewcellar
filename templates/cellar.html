@@ -1,86 +1,247 @@
 {{template "top.html" .}}
-
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
-
-<script>
-	$(document).ready(function() {
-    $(".datepicker").datepicker();
-		$("#quantity-slider").slider({
-			range: "min",
-			value: 1,
-			min: 1,
-			max: 100,
-			slide: function( event, ui ) {
-				$("#quantity").val(ui.value);
-			}
-		});
-		$("#quantity").val($("#quantity-slider").slider("value"));
-	});
-</script>
-
+<a href="/mycellars">back</a>
 <h1>{{ .Cellar.Name }}</h1>
 
 <h2>Add a new beer</h2>
 
-{{ if ne .Error "" }}
-	<p>{{ .Error }}</p>	
-{{ end }}
+<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
 {{ with .Cellar }}
 
-<form method="POST" action="cellar">
-	<input type="hidden" id="cellar" name="cellar" value="{{ .ID }}"/>
-	<table>
-		<tr>
-			<td>name:</td>
-			<td><input type="text" id="newbeer" name="newbeer" /></td>
-		</tr>
-		<tr>
-			<td>quantity:</td>
-			<td>
-				<input type="text" readonly id="quantity" name="quantity" />
-				<div id="quantity-slider"></div>
-			</td>
-		</tr>
-		<tr>
-			<td>notes:</td>
-			<td><textarea id="notes" name="notes"></textarea></td>
-		</tr>
-		<tr>
-			<td>brewed on:</td>
-			<td><input type="text" readonly class="datepicker" id="brewed" name="brewed"></td>
-		</tr>
-		<tr>
-			<td>added on:</td>
-			<td><input type="text" readonly class="datepicker" id="added" name="added"></td>
-		</tr>
-		<tr>
-			<td>consumed on:</td>
-			<td><input type="text" readonly class="datepicker" id="consume" name="consumed"></td>
-		</tr>
-		<tr>
-			<td colspan="2"><input type="submit" value="add"/></td>
-		</tr>		
-	</table>
-</form>
+<div class="row">
+	<div class="col-lg-6">
+		<form method="POST" action="cellar" class="form-horizontal">
+			<input type="hidden" id="cellar" name="cellar" value="{{ .ID }}"/>
 
-	<ul>
-	{{ range .Beers }}
-		<li>{{ .Name }}
-			<ul>
-				<li>Quantity: {{ .Quantity }}</li>
-				<li>Notes: &quot;{{ .Notes }}&quot;</li>
-				<li>Brewed: {{ if .Brewed }} {{ .Brewed.ToString }} {{ end }}</li>
-				<li>Added: {{ .Added.ToString }}</li>
-				<li>Age: {{ .GetAgeString }}</li>
-				<li>Consumed: {{ .GetConsumedString }} </li>
-			</ul>
-		</li>
-	{{ end }}
-	</ul>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">name:</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="text" id="newbeer" name="newbeer" />
+				</div>
+			</div>
 
+			<div class="form-group">
+				<label class="col-sm-2 control-label">quantity:</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="text" readonly id="quantity" name="quantity" />
+					<div id="quantity-slider"></div>
+				</div>
+			</div>
+
+
+			<div class="form-group">
+				<label class="col-sm-2 control-label">notes:</label>
+				<div class="col-sm-10">
+					<textarea class="form-control" id="notes" name="notes"></textarea>
+				</div>
+			</div>
+
+
+			<div class="form-group">
+				<label class="col-sm-2 control-label">brewed on:</label>
+				<div class="col-sm-10">
+					<input class="form-control datepicker" type="text" readonly id="brewed" name="brewed">
+				</div>
+			</div>
+
+
+			<div class="form-group">
+				<label class="col-sm-2 control-label">added on:</label>
+				<div class="col-sm-10">
+					<input class="form-control datepicker" type="text" readonly id="added" name="added">
+				</div>
+			</div>
+
+			<div class="form-group" style="text-align:center;">
+					<button type="submit" class="btn btn-default">Add</button>
+			</div>
+			
+			</div>
+		</form>
+	</div>
+
+<h2>Existing beers</h2><a id="edit-toggle" href="#">(edit)</a>
+<div class="row">
+	<div class="col-lg-6">
+		<div class="list-group">
+
+			{{ with $Cellar := . }}
+			{{ range .Beers }}
+		  <a id="Beer{{ .ID }}" href="/beer?cellar={{ $Cellar.ID }}&id={{ .ID }}" data-beer="{{.ID}}" class="list-group-item beer-row">
+		    
+		    <h3 class="beer-name list-group-item-heading">{{ .Name }}</h3>
+		    
+		    <div class="row">
+		    	<div class="col-lg-6">
+		    		<p class="list-group-item-text">Average Rating: {{ .GetAverageRating }}</p>
+				    <p class="list-group-item-text">Quantity: {{ .Quantity }}</p>
+		  		</div>
+		    	<div class="col-lg-6">
+		    		<span class="remove-icon badge pull-right" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
+		    		<span class="transfer-icon badge pull-right" style="display:none; margin-right:5px;"><span class="glyphicon glyphicon-transfer"></span></span>
+		    		{{ if .Brewed }}
+		    			<p class="list-group-item-text">Brewed: {{ .Brewed.ToString }}</p>
+		    		{{ end }}
+				    <p class="list-group-item-text">Added: {{ .Added.ToString }}</p>
+				    <p class="list-group-item-text">Age: {{ .GetAgeString }}</p>
+		  		</div>
+		    </div>
+		  </a>
+		  {{ end }}
+		  {{ end }}
+		</div>
+	</div>
+</div>
 {{ end }}
+
+<a href="#delete-warning" id="delete-warning-link"></a>
+<div id="delete-warning" style="display:none;" class="text-center">
+	<p>Are you sure you want to delete &quot;<span class="beer-name"></span>&quot;?</p>
+	<p>
+		<button id="delete-beer" class="btn btn-default">yes</button>
+		<button class="btn btn-default cancel">no</button>
+	</p>
+</div>
+
+<a href="#transfer-warning" id="transfer-warning-link"></a>
+<div id="transfer-warning" style="display:none;" class="text-center">
+	<p>Where would you like to transfer &quot;<span class="beer-name"></span>&quot;?</p>
+	<p>
+	<div class="btn-group" data-toggle="buttons" style="padding-bottom:10px;">
+		
+		{{ with $Page := . }} 
+		{{ range .Account.Cellars }}
+		  <label class="btn btn-default {{ if eq .Name $Page.Cellar.Name }} default-active active {{ end }}">
+		    <input type="radio" name="options" data-cellar="{{.ID}}" {{ if eq .Name $Page.Cellar.Name }} checked {{ end }}> {{ .Name }}
+		  </label>
+		{{ end }}
+		{{ end }}
+	</div>
+	</p>
+	<p>
+		<button id="delete-beer" class="btn btn-default">yes</button>
+		<button class="btn btn-default cancel">no</button>
+	</p>
+</div>
+
+
+<script>
+	var cellarID = {{ .Cellar.ID }};
+	var selectedBeer = "";
+
+	$('.btn').button();
+
+  $(".datepicker").datepicker({
+  	"dateFormat": "yy-mm-dd"
+  });
+
+	$("#quantity-slider").slider({
+		range: "min",
+		value: 1,
+		min: 1,
+		max: 100,
+		slide: function( event, ui ) {
+			$("#quantity").val(ui.value);
+		}
+	});
+	$("#quantity").val($("#quantity-slider").slider("value"));
+
+	$("#transfer-warning-link").fancybox({
+		maxWidth : 500,
+		beforeShow : function() { $('.default-active').click(); },
+
+	});
+	$('.transfer-icon').click(transferBeer);
+	function transferBeer(e) {
+		e.preventDefault();
+		selectedBeer = $(this).parent().parent().parent().find('.beer-name').html();
+		alert($(this).closest('.beer-row').data().beer);
+		$('.beer-name').html(selectedBeer);
+		$("#transfer-warning-link").click();		
+	}
+
+	$("#delete-warning-link").fancybox();
+
+	$('#edit-toggle').click(function(e) {
+		if($('#edit-toggle').html() === "(edit)") {
+			$('#edit-toggle').html("(disable edit)")
+			$('.badge').show();
+		}
+		else {
+			$('#edit-toggle').html("(edit)")
+			$('.badge').hide();
+		}
+		e.preventDefault();
+	});
+
+	$('.remove-icon').click(removeBeer);
+	function removeBeer(e) {
+		e.preventDefault();
+		selectedBeer = $(this).parent().parent().parent().find('.beer-name').html();
+		alert($(this).closest('.beer-row').data().beer);
+		$('.beer-name').html(selectedBeer);
+		$("#delete-warning-link").click();		
+	}
+
+	$('#delete-beer').click(function() {
+		$.fancybox.close();
+		$.ajax({
+			type : "POST",
+			url : "api/delete-beer",
+			context : $(this),
+			data : { 
+				cellarID : cellarID,
+				beerName : selectedBeer
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					$('#Beer'+obj.Data.ID).remove();
+					showError("Beer successfully deleted : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
+				}
+				else {
+					showError("Failed to delete beer : (" + obj.Error + ")");
+				}
+			}
+		});
+	});
+
+	$('.cancel').click(function() {	
+		$.fancybox.close();
+	});
+
+	$('#new-cellar-submit').click(function() {
+		$.post(
+			"api/new-beer",
+			{
+				name : $('#newbeer').val(),
+				quantity : $('#quantity').val(),
+				notes : $('#notes').val(),
+				brewed : $('#brewed').val(), 
+				added : $('#added').val(),
+			},
+			function(data) {
+				console.log(data);
+				
+				var obj = $.parseJSON(data);
+
+				console.log(obj);
+
+				if(obj.Status == "SUCCESS") {
+					// var cellar = $('#template-cellar-row').clone().show();
+					// cellar.attr('id', "Cellar"+obj.Data.ID);
+					// cellar.find(".cellar-name").html(obj.Data.Name);
+					// cellar.find(".list-group-heading").attr("href", "../cellar?id=" + obj.Data.ID);
+					// cellar.find('.remove-icon').click(removeCellar);
+					// $('#cellars').append(cellar);
+					showError("Successfully added new beer : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
+				}
+				else {
+					showError("Failed to add beer (" + obj.Error + ")");
+				}
+			});
+	});
+
+</script>
 
 {{template "bottom.html" .}}

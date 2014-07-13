@@ -1,12 +1,33 @@
 <html>
 	<head>
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+		<link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/jquery.fancybox.css" rel="stylesheet">
+		
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.fancybox.min.js"></script>
+
 		<title>{{.Title}}</title>
 	</head>
 	<body>
-		<div class="links">
-			<a href="/">home</a>&nbsp;
-			<a href="/mycellars">my cellars</a>&nbsp;
-			{{ if.Logout }}
-			<a href="{{ .Logout }}">logout</a>&nbsp;
-			{{ end }}
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">My Brew Cellar</a>
+        </div>
+ 				<div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/">home</a></li>
+            <li><a href="/myaccount">my account</a></li>
+            <li><a href="/mycellars">my cellars</a></li>
+            {{ if.Logout }}
+            <li><a href="{{ .Logout }}">logout</a></li>
+            {{ end }}
+          </ul>
+      	</div>
+    	</div>
 		</div>
+		<div class="container">

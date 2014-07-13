@@ -1,2 +1,34 @@
+<script>
+	var SUCCESS = 0;
+	var INFO = 1;
+	var WARN = 2;
+	var ERROR = 3;
+	var errorTimeout = null;
+
+
+	function showError(msg, level) {
+		if(errorTimeout != null) {
+			clearTimeout(errorTimeout);
+		}
+		errorTimeout = setTimeout(function() {
+			$('#alert').fadeOut("slow");
+		}, 5000);
+
+		var errClass = "alert-danger";
+		if(level !== undefined) {
+			if(level <= SUCCESS) {
+				errClass = "alert-success";
+			} else if(level <= INFO) {
+				errClass = "alert-info";
+			} else if(level <= WARN) {
+				errClass = "alert-warning";
+			}
+		}
+		$('#alert').removeClass("alert-success").removeClass("alert-info").removeClass("alert-warning").removeClass("alert-danger");
+		$('#alert').addClass(errClass).html(msg).show();
+	}
+</script>
+
+		</div> <!-- end container -->
 	</body>
 </html>
