@@ -2,8 +2,8 @@ package models
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type Cellar struct {
@@ -22,15 +22,14 @@ type Beer struct {
 	Added         *Date
 	Quantity      int
 	NextTastingID int
-	Tastings      []*Tasting
 	TastingsByID  map[int]*Tasting
 }
 
 type Tasting struct {
-	ID    int
+	ID     int
 	Rating int
-	Notes string
-	Date  *Date
+	Notes  string
+	Date   *Date
 }
 
 func (beer *Beer) GetBirthday() *Date {
@@ -53,12 +52,12 @@ func newBeer(name, notes, brewed, added string, quantity int) *Beer {
 	}
 
 	return &Beer{
-		ID: 0,
+		ID:       0,
 		Name:     name,
 		Notes:    notes,
 		Brewed:   brewedDate,
 		Added:    addedDate,
-		Tastings: []*Tasting{},
+		TastingsByID: map[int]*Tasting{},
 		Quantity: quantity,
 	}
 }
@@ -79,9 +78,9 @@ func (cellar Cellar) addBeer(name, notes, brewed, added string, quantity int) {
 
 func (beer *Beer) GetAverageRating() float64 {
 	average := 0.0
-	tastingCount := len(beer.Tastings)
+	tastingCount := len(beer.TastingsByID)
 	if tastingCount > 0 {
-		for _, tasting := range beer.Tastings {
+		for _, tasting := range beer.TastingsByID {
 			average += float64(tasting.Rating)
 		}
 		average /= float64(tastingCount)
@@ -128,6 +127,11 @@ func getDurationString(from, to *Date) string {
 		}
 
 	}
+
+	if ageStr == "" {
+		ageStr = "< 1 day"
+	}
+
 	return strings.TrimSpace(ageStr)
 }
 

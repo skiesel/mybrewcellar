@@ -75,7 +75,7 @@ func (account *Account) GetCellarByID(idStr string) *Cellar {
 	return account.CellarsByID[id]
 }
 
-func (account *Account) DeleteCellar(cellarName string) error {
+func (account *Account) DeleteCellarByName(cellarName string) error {
 	cellar := account.Cellars[cellarName]
 	if cellar == nil {
 		return errors.New("Cellar does not exist")
@@ -83,6 +83,18 @@ func (account *Account) DeleteCellar(cellarName string) error {
 
 	delete(account.CellarsByID, cellar.ID)
 	delete(account.Cellars, cellarName)
+
+	return nil
+}
+
+func (account *Account) DeleteCellarByID(cellarID int) error {
+	cellar := account.CellarsByID[cellarID]
+	if cellar == nil {
+		return errors.New("Cellar does not exist")
+	}
+
+	delete(account.CellarsByID, cellar.ID)
+	delete(account.Cellars, cellar.Name)
 
 	return nil
 }

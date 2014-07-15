@@ -10,8 +10,7 @@
 
 <div class="row">
 	<div class="col-lg-6">
-		<form method="POST" action="cellar" class="form-horizontal">
-			<input type="hidden" id="cellar" name="cellar" value="{{ .ID }}"/>
+		<div class="form-horizontal">
 
 			<div class="form-group">
 				<label class="col-sm-2 control-label">name:</label>
@@ -53,21 +52,38 @@
 			</div>
 
 			<div class="form-group" style="text-align:center;">
-					<button type="submit" class="btn btn-default">Add</button>
+					<button id="new-beer" class="btn btn-default">Add</button>
 			</div>
 			
-			</div>
-		</form>
+		</div>
 	</div>
+</div>
 
 <h2>Existing beers</h2><a id="edit-toggle" href="#">(edit)</a>
 <div class="row">
 	<div class="col-lg-6">
-		<div class="list-group">
+		<div id="beer-rows" class="list-group">
+		  <a id="beer-row-template" class="list-group-item beer-row" style="display:none;">
+		    <h3 class="beer-name list-group-item-heading"></h3>	    
+		    <div class="row">
+		    	<div class="col-lg-6">
+		    		<p class="list-group-item-text">Average Rating: 0</p>
+				    <p class="list-group-item-text">Quantity: <span class="quantity"></span></p>
+		  		</div>
+		    	<div class="col-lg-6">
+		    		<span class="remove-icon badge pull-right" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
+		    		<span class="transfer-icon badge pull-right" style="display:none; margin-right:5px;"><span class="glyphicon glyphicon-transfer"></span></span>
+	    			<p class="list-group-item-text">Brewed: <span class="brewed"></span></p>
+				    <p class="list-group-item-text">Added: <span class="added"></span></p>
+				    <p class="list-group-item-text">Age: <span class="age"></span></p>
+		  		</div>
+		    </div>
+		  </a>
+
 
 			{{ with $Cellar := . }}
 			{{ range .Beers }}
-		  <a id="Beer{{ .ID }}" href="/beer?cellar={{ $Cellar.ID }}&id={{ .ID }}" data-beer="{{.ID}}" class="list-group-item beer-row">
+		  <a id="Beer{{ .ID }}" href="/beer?cellar={{ $Cellar.ID }}&id={{ .ID }}" data-id="{{.ID}}" data-name="{{.Name}}" class="list-group-item beer-row">
 		    
 		    <h3 class="beer-name list-group-item-heading">{{ .Name }}</h3>
 		    
@@ -112,14 +128,14 @@
 		{{ with $Page := . }} 
 		{{ range .Account.Cellars }}
 		  <label class="btn btn-default {{ if eq .Name $Page.Cellar.Name }} default-active active {{ end }}">
-		    <input type="radio" name="options" data-cellar="{{.ID}}" {{ if eq .Name $Page.Cellar.Name }} checked {{ end }}> {{ .Name }}
+		    <input type="radio" name="cellarRadios" data-cellar="{{.ID}}" {{ if eq .Name $Page.Cellar.Name }} checked {{ end }}> {{ .Name }}
 		  </label>
 		{{ end }}
 		{{ end }}
 	</div>
 	</p>
 	<p>
-		<button id="delete-beer" class="btn btn-default">yes</button>
+		<button id="transfer-beer" class="btn btn-default">yes</button>
 		<button class="btn btn-default cancel">no</button>
 	</p>
 </div>
@@ -127,7 +143,7 @@
 
 <script>
 	var cellarID = {{ .Cellar.ID }};
-	var selectedBeer = "";
+	var selectedBeer = new Object();
 
 	$('.btn').button();
 
@@ -154,9 +170,9 @@
 	$('.transfer-icon').click(transferBeer);
 	function transferBeer(e) {
 		e.preventDefault();
-		selectedBeer = $(this).parent().parent().parent().find('.beer-name').html();
-		alert($(this).closest('.beer-row').data().beer);
-		$('.beer-name').html(selectedBeer);
+		selectedBeer.id = $(this).closest('.beer-row').data('id');
+		selectedBeer.name = $(this).closest('.beer-row').data('name');
+		$('#transfer-warning').find('.beer-name').html(selectedBeer.name);
 		$("#transfer-warning-link").click();		
 	}
 
@@ -177,9 +193,9 @@
 	$('.remove-icon').click(removeBeer);
 	function removeBeer(e) {
 		e.preventDefault();
-		selectedBeer = $(this).parent().parent().parent().find('.beer-name').html();
-		alert($(this).closest('.beer-row').data().beer);
-		$('.beer-name').html(selectedBeer);
+		selectedBeer.id = $(this).closest('.beer-row').data('id');
+		selectedBeer.name = $(this).closest('.beer-row').data('name');
+		$('#delete-warning').find('.beer-name').html(selectedBeer.name);
 		$("#delete-warning-link").click();		
 	}
 
@@ -191,7 +207,7 @@
 			context : $(this),
 			data : { 
 				cellarID : cellarID,
-				beerName : selectedBeer
+				beerID : selectedBeer.id
 			},
 			success : function(data) {
 				var obj = $.parseJSON(data);
@@ -206,40 +222,86 @@
 		});
 	});
 
+	$('#transfer-beer').click(function() {
+		console.log({ 
+				fromCellarID : cellarID,
+				toCellarID : $('input[name=cellarRadios]:checked').data('cellar'),
+				beerID : selectedBeer.id,
+			});
+		$.fancybox.close();
+		$.ajax({
+			type : "POST",
+			url : "api/transfer-beer",
+			context : $(this),
+			data : { 
+				fromCellarID : cellarID,
+				toCellarID : $('input[name=cellarRadios]:checked').data('cellar'),
+				beerID : selectedBeer.id,
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					$('#Beer'+obj.Data.Beer.ID).remove();
+					showError("&quot;"
+						+ obj.Data.Beer.Name
+						+ "&quot; successfully transferred from &quot;"
+						+ obj.Data.FromCellar.Name
+						+ "&quot;"
+						+ " to &quot;"
+						+ obj.Data.ToCellar.Name
+						+ "&quot;", SUCCESS);
+				}
+				else {
+					showError("Failed to transfer beer : (" + obj.Error + ")");
+				}
+			}
+		});
+	});
+
 	$('.cancel').click(function() {	
 		$.fancybox.close();
 	});
 
-	$('#new-cellar-submit').click(function() {
-		$.post(
-			"api/new-beer",
-			{
+	$('#new-beer').click(function() {
+		$.ajax({
+			type : "POST",
+			url : "api/new-beer",
+			context : $(this),
+			data : {
+				cellarID : cellarID,
 				name : $('#newbeer').val(),
 				quantity : $('#quantity').val(),
 				notes : $('#notes').val(),
 				brewed : $('#brewed').val(), 
 				added : $('#added').val(),
 			},
-			function(data) {
-				console.log(data);
-				
+			success : function(data) {
 				var obj = $.parseJSON(data);
 
 				console.log(obj);
 
 				if(obj.Status == "SUCCESS") {
-					// var cellar = $('#template-cellar-row').clone().show();
-					// cellar.attr('id', "Cellar"+obj.Data.ID);
-					// cellar.find(".cellar-name").html(obj.Data.Name);
-					// cellar.find(".list-group-heading").attr("href", "../cellar?id=" + obj.Data.ID);
-					// cellar.find('.remove-icon').click(removeCellar);
-					// $('#cellars').append(cellar);
+					var newBeer = $("#beer-row-template").clone().css("display", "block");
+					newBeer.attr("href", "/beer?cellar="+cellarID+"&beer="+obj.Data.ID);
+					newBeer.attr("id", "Beer"+obj.Data.ID);
+					$(newBeer).data("id", obj.Data.ID);
+					$(newBeer).data("name", obj.Data.Name);
+					$(newBeer).find(".beer-name").html(obj.Data.Name);
+					$(newBeer).find(".quantity").html(obj.Data.Quantity);
+					$(newBeer).find(".brewed").html(obj.Data.Brewed);
+					$(newBeer).find(".added").html(obj.Data.Added);
+					$(newBeer).find(".age").html(obj.Data.Age);
+					$(newBeer).find('.remove-icon').click(removeBeer);
+					$(newBeer).find('.transfer-icon').click(transferBeer);
+					$(newBeer).find('.btn').button();
+					$('#beer-rows').append(newBeer);
 					showError("Successfully added new beer : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
 				}
 				else {
 					showError("Failed to add beer (" + obj.Error + ")");
 				}
-			});
+			}
+		});
 	});
 
 </script>

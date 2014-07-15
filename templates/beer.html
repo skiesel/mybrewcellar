@@ -1,9 +1,8 @@
 {{template "top.html" .}}
 
-<link rel="stylesheet" type="text/css" href="css/jRating.jquery.css" media="screen" />
-<script type="text/javascript" src="js/jRating.jquery.min.js"></script>
-
 <a href="/cellar?id={{ .Cellar.ID }}">back</a>
+
+<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
 {{ with .Beer }}
 
@@ -29,9 +28,9 @@
 
 <h2>Add new tasting note</h2>
 
-<form id="new-cellar-form" method="POST" action="mycellars">
 <div class="row">
-	<div class="col-lg-12">
+	<div class="col-lg-6">
+		<div class="form-horizontal">
 
 			<div class="form-group">
 				<label class="col-sm-2 control-label">rating:</label>
@@ -58,29 +57,42 @@
 			
 			<div class="form-group" style="text-align:center;">
 	      <span class="input-group-btn">
-	        <button id="new-cellar-submit" class="btn btn-default" type="button">add!</button>
+	        <button id="new-tasting-submit" class="btn btn-default" type="button">add!</button>
 	      </span>
 	    </div>
   </div>
 </div>
-</form>
+</div>
 
 
 <h2>Existing tasting notes</h2><a id="edit-toggle" href="#">(edit)</a>
 
 <div class="row">
-	<div class="col-lg-12">
-		<div class="list-group">
+	<div class="col-lg-6">
+		<div id="tastings" class="list-group">
 
-		  {{ range .Tastings }}
-		  	<a href="#" class="list-group-item">
+		  	<a id="tasting-row-template" href="#" class="list-group-item tasting-row" style="display:none;">
+		  		<div class="row">
+		    		<div class="col-lg-6">
+				    	<p class="list-group-item-text date"></p>
+				    </div>
+						<div class="col-lg-6">
+							<span class="remove-icon badge pull-right" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
+				    	<p class="list-group-item-text tasting-notes-text"></p>
+				    </div>
+					</div>
+		  	</a>
+
+
+		  {{ range .TastingsByID }}
+		  	<a id="Tasting{{.ID}}" href="#" class="list-group-item tasting-row" data-id="{{.ID}}">
 		  		<div class="row">
 		    		<div class="col-lg-6">
 				    	<p class="list-group-item-text">{{ .Date.ToString }}</p>
 				    </div>
 						<div class="col-lg-6">
 							<span class="remove-icon badge pull-right" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
-				    	<p class="list-group-item-text">{{ .Notes }}</p>
+				    	<p class="list-group-item-text tasting-notes-text">{{ .Notes }}</p>
 				    </div>
 					</div>
 		  	</a>
@@ -91,7 +103,21 @@
 
 {{ end }}
 
+<a href="#delete-warning" id="delete-warning-link"></a>
+<div id="delete-warning" style="display:none;" class="text-center">
+	<p>Are you sure you want to delete this tasting note?</p>
+	<div class="well well-sm tasting-notes-text"></div>
+	<p>
+		<button id="delete-tasting" class="btn btn-default">yes</button>
+		<button class="btn btn-default cancel">no</button>
+	</p>
+</div>
+
 <script>
+
+	var cellarID = {{ .Cellar.ID }};
+	var beerID = {{ .Beer.ID }};
+	var selectedTasting = new Object();
 
 	$("#rating-slider").slider({
 		range: "min",
@@ -120,14 +146,80 @@
 		e.preventDefault();
 	});
 
+	$('.cancel').click(function() {	
+		$.fancybox.close();
+	});
+
+	$("#delete-warning-link").fancybox();
+
 	$('.remove-icon').click(removeTasting);
 	function removeTasting(e) {
 		e.preventDefault();
-		// var cellarName = $(this).parent().find('.cellar-name').html();
-		// $('#deletecellar').val(cellarName);
-		// $('#cellar-name').html(cellarName);
-		// $("#delete-warning-link").click();		
+		var tastingRow = $(this).closest('.tasting-row');
+		selectedTasting.id = $(tastingRow).data('id');
+		var tastingNotes = $(tastingRow).find(".tasting-notes-text").html();
+		console.log(tastingNotes);
+		$("#delete-warning").find(".tasting-notes-text").html(tastingNotes);
+		$("#delete-warning-link").click();
 	}
+
+	$('#delete-tasting').click(function() {
+		$.fancybox.close();
+		$.ajax({
+			type : "POST",
+			url : "api/delete-tasting",
+			context : $(this),
+			data : { 
+				cellarID : cellarID,
+				beerID : beerID,
+				tastingID : selectedTasting.id,
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					$('#Tasting'+obj.Data.ID).remove();
+					showError("Tasting successfully deleted", SUCCESS);
+				}
+				else {
+					showError("Failed to delete tasting : (" + obj.Error + ")");
+				}
+			}
+		});
+	});
+
+	$('#new-tasting-submit').click(function() {
+		$.fancybox.close();
+		$.ajax({
+			type : "POST",
+			url : "api/new-tasting",
+			context : $(this),
+			data : { 
+				cellarID : cellarID,
+				beerID : beerID,
+				tastingID : selectedTasting.id,
+				rating : $('#rating').val(),
+				notes : $('#notes').val(),
+				tasted: $('#tasted').val(),
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					var newTasting = $("#tasting-row-template").clone().css("display", "block");
+					// newTasting.attr("href", "#");
+					newTasting.attr("id", "Tasting"+obj.Data.ID);
+					newTasting.data('id', obj.Data.ID);
+					newTasting.find('.date').html(obj.Data.TastedDate);
+					newTasting.find('.tasting-notes-text').html(obj.Data.Notes);
+					newTasting.find('.remove-icon').click(removeTasting);
+					$('#tastings').append(newTasting);
+					showError("Tasting successfully added", SUCCESS);
+				}
+				else {
+					showError("Failed to add tasting : (" + obj.Error + ")");
+				}
+			}
+		});
+	});
 </script>
 
 {{template "bottom.html" .}}

@@ -3,7 +3,7 @@ package models
 import (
 	"appengine"
 	"appengine/datastore"
-	// "appengine/memcache"
+	"appengine/memcache"
 )
 
 type AccountDS struct {
@@ -29,10 +29,10 @@ type BeerDS struct {
 }
 
 type TastingDS struct {
-	ID    int
+	ID     int
 	Rating int
-	Notes string
-	Date  string
+	Notes  string
+	Date   string
 }
 
 func SaveAccount(c appengine.Context, account *Account) error {
@@ -43,17 +43,17 @@ func SaveAccount(c appengine.Context, account *Account) error {
 		}
 	}
 
-	// cacheItem := &memcache.Item{
-	// 	Key:    account.User.Email,
-	// 	Object: account,
-	// }
+	cacheItem := &memcache.Item{
+		Key:    account.User.Email,
+		Object: account,
+	}
 
-	// err := memcache.Gob.Set(c, cacheItem)
-	// if err != nil {
-	// 	c.Infof("Account not cached (%v)", err)
-	// }
+	err := memcache.Gob.Set(c, cacheItem)
+	if err != nil {
+		c.Infof("Account not cached (%v)", err)
+	}
 
-	err := datastore.RunInTransaction(c, func(c appengine.Context) error {
+	err = datastore.RunInTransaction(c, func(c appengine.Context) error {
 
 		accountKey := datastore.NewKey(c, "Account", account.User.Email, 0, nil)
 		accountDS := account.toAccountDS()
@@ -80,7 +80,7 @@ func SaveAccount(c appengine.Context, account *Account) error {
 			i++
 			beerCount += len(cellar.Beers)
 			for _, beer := range cellar.Beers {
-				tastingCount += len(beer.Tastings)
+				tastingCount += len(beer.TastingsByID)
 			}
 		}
 
@@ -122,7 +122,7 @@ func SaveAccount(c appengine.Context, account *Account) error {
 
 			for _, beer := range cellar.Beers {
 
-				for _, tasting := range beer.Tastings {
+				for _, tasting := range beer.TastingsByID {
 					tastingKeys[curTastingIndex] = datastore.NewIncompleteKey(c, "Tasting", beerKeys[curBeerIndex])
 					tastingDSs[curTastingIndex] = tasting.toTastingDS()
 					curTastingIndex++
@@ -172,36 +172,39 @@ func (beer *Beer) toBeerDS() *BeerDS {
 
 func (tasting *Tasting) toTastingDS() *TastingDS {
 	return &TastingDS{
-		ID:    tasting.ID,
-		Rating:tasting.Rating,
-		Notes: tasting.Notes,
-		Date:  tasting.Date.ToDSString(),
+		ID:     tasting.ID,
+		Rating: tasting.Rating,
+		Notes:  tasting.Notes,
+		Date:   tasting.Date.ToDSString(),
 	}
 }
 
 func GetAccount(c appengine.Context, email string) *Account {
 
-	// cachedAccount := &Account{}
-	// _, err := memcache.Gob.Get(c, email, cachedAccount)
-	// if err == nil {
-	// 	c.Infof("Cache Hit!")
+	cachedAccount := &Account{}
+	_, err := memcache.Gob.Get(c, email, cachedAccount)
+	if err == nil {
+		c.Infof("Cache Hit!")
 
-	// 	for _, cellar := range cachedAccount.CellarsByID {
-	// 		if cellar != cachedAccount.Cellars[cellar.Name] {
-	// 			panic("NOT THE SAME CELLAR")
-	// 		}
-	// 	}
+		// avoid problems with memcache doing a deep copy and not
+		// maintaining references properly
+		for _, cellar := range cachedAccount.CellarsByID {
+			cachedAccount.Cellars[cellar.Name] = cellar
+			for _, beer := range cellar.BeersByID {
+				cellar.Beers[beer.Name] = beer
+			}
+		}
 
-	// 	return cachedAccount
-	// } else {
-	// 	c.Infof("Cache Miss, retrieving from datastore! (%v)", err)
-	// }
+		return cachedAccount
+	} else {
+		c.Infof("Cache Miss, retrieving from datastore! (%v)", err)
+	}
 
 	c.Infof("~~~~~~~LoadAccount~~~~~~~")
 
 	accountKey := datastore.NewKey(c, "Account", email, 0, nil)
 	accountDS := &AccountDS{}
-	err := datastore.Get(c, accountKey, accountDS)
+	err = datastore.Get(c, accountKey, accountDS)
 	if err != nil {
 		c.Errorf("Did not find account: %v (%v)", email, err.Error())
 		return nil
@@ -259,7 +262,6 @@ func GetAccount(c appengine.Context, email string) *Account {
 				}
 
 				tasting := tastingDS.toTasting()
-				beer.Tastings = append(beer.Tastings, tasting)
 				beer.TastingsByID[tasting.ID] = tasting
 			}
 		}
@@ -299,17 +301,16 @@ func (beerDS *BeerDS) toBeer() *Beer {
 		Added:         ParseDate(beerDS.Added),
 		Quantity:      beerDS.Quantity,
 		NextTastingID: beerDS.NextTastingID,
-		Tastings:      []*Tasting{},
 		TastingsByID:  map[int]*Tasting{},
 	}
 }
 
 func (tastingDS *TastingDS) toTasting() *Tasting {
 	return &Tasting{
-		ID:    tastingDS.ID,
+		ID:     tastingDS.ID,
 		Rating: tastingDS.Rating,
-		Notes: tastingDS.Notes,
-		Date:  ParseDate(tastingDS.Date),
+		Notes:  tastingDS.Notes,
+		Date:   ParseDate(tastingDS.Date),
 	}
 }
 

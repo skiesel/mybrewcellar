@@ -31,7 +31,7 @@
 					<span class="badge">0</span>
 				</a>
 				{{ range .Account.Cellars }}
-					<a id="Cellar{{ .ID }}" href="/cellar?id={{ .ID }}" class="list-group-item">
+					<a id="Cellar{{ .ID }}" href="/cellar?id={{ .ID }}" class="list-group-item cellar-row" data-id="{{.ID}}" data-name="{{.Name}}">
 						<span class="cellar-name">{{ .Name }}</span>
 						<span class="remove-icon badge" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
 						<span class="badge">{{ len .Beers }}</span>
@@ -53,7 +53,7 @@
 </div>
 
 <script>
-	var cellarToDelete = "";
+	var selectedCellar = new Object();
 
 	$('#edit-toggle').click(function(e) {
 		if($('#edit-toggle').html() === "(edit)") {
@@ -71,8 +71,9 @@
 	$('.remove-icon').click(removeCellar);
 	function removeCellar(e) {
 		e.preventDefault();
-		cellarToDelete = $(this).parent().find('.cellar-name').html();
-		$('#cellar-name').html(cellarToDelete);
+		selectedCellar.id = $(this).closest('.cellar-row').data('id');
+		selectedCellar.name = $(this).closest('.cellar-row').data('name');
+		$('#cellar-name').html(selectedCellar.name);
 		$("#delete-warning-link").click();		
 	}
 
@@ -82,7 +83,7 @@
 			type : "POST",
 			url : "api/delete-cellar",
 			context : $(this),
-			data : { cellarName : cellarToDelete },
+			data : { cellarID : selectedCellar.id },
 			success : function(data) {
 				var obj = $.parseJSON(data);
 
@@ -111,8 +112,6 @@
 				console.log(data);
 				
 				var obj = $.parseJSON(data);
-
-				console.log(obj);
 
 				if(obj.Status == "SUCCESS") {
 					var cellar = $('#template-cellar-row').clone().css("display", "block");
