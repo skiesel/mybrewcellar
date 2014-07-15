@@ -85,6 +85,9 @@ func (beer *Beer) GetAverageRating() float64 {
 		}
 		average /= float64(tastingCount)
 	}
+
+	
+
 	return average
 }
 

@@ -393,6 +393,8 @@ type simpleTasting struct {
 	Notes string
 	TastedDate string
 	AgeTastedDate string
+	Quantity int
+	AverageRating float64
 }
 
 func handleNewTastingRequest(w http.ResponseWriter, r *http.Request) {
@@ -424,6 +426,7 @@ func handleNewTastingRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	decrement := r.PostFormValue("decrement") == "yes"
 	notes := r.PostFormValue("notes")
 
 	account := getAccount(c)
@@ -451,6 +454,12 @@ func handleNewTastingRequest(w http.ResponseWriter, r *http.Request) {
 		Date : tastedDate,
 	}
 	
+	if decrement {
+		beer.Quantity--
+		if beer.Quantity < 0 {
+			beer.Quantity = 0
+		}
+	}
 	beer.NextTastingID++
 
 	beer.TastingsByID[tasting.ID] = tasting
@@ -467,6 +476,8 @@ func handleNewTastingRequest(w http.ResponseWriter, r *http.Request) {
 		Notes : tasting.Notes,
 		TastedDate : tasting.Date.ToString(),
 		AgeTastedDate : beer.GetTastingAge(tasting),
+		Quantity : beer.Quantity,
+		AverageRating : beer.GetAverageRating(),
 	})
 }
 
