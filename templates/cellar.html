@@ -282,7 +282,7 @@
 
 				if(obj.Status == "SUCCESS") {
 					var newBeer = $("#beer-row-template").clone().css("display", "block");
-					newBeer.attr("href", "/beer?cellar="+cellarID+"&beer="+obj.Data.ID);
+					newBeer.attr("href", "/beer?cellar="+cellarID+"&id="+obj.Data.ID);
 					newBeer.attr("id", "Beer"+obj.Data.ID);
 					$(newBeer).data("id", obj.Data.ID);
 					$(newBeer).data("name", obj.Data.Name);
