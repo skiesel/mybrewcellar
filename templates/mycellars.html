@@ -100,13 +100,12 @@ app.controller("MyCellarsController", function($scope){
 
 	$scope.confirmDeleteCellar = function() {
 		$scope.cancelFancybox();
-		$.ajax({
-			type : "POST",
-			url : "api/delete-cellar",
-			data : { 
+		$.post(
+			"api/delete-cellar",
+			{ 
 				cellarID : $scope.selectedCellar.ID
 			},
-			success : function(data) {
+			function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					var index = $scope.cellars.indexOf($scope.selectedCellar);
@@ -118,7 +117,7 @@ app.controller("MyCellarsController", function($scope){
 					showError("Failed to delete cellar : (" + obj.Error + ")");
 				}
 			}
-		});
+		);
 	};
 
 	$scope.addCellar = function() {
@@ -138,7 +137,8 @@ app.controller("MyCellarsController", function($scope){
 				else {
 					showError("Failed to add cellar (" + obj.Error + ")");
 				}
-			});
+			}
+		);
 	};
 	
 });

@@ -197,15 +197,14 @@ app.controller("MyBeerController", function($scope){
 
 	$scope.confirmDeleteTasting = function() {
 		$scope.cancelFancybox();
-		$.ajax({
-			type : "POST",
-			url : "api/delete-tasting",
-			data : { 
+		$.post(
+			"api/delete-tasting",
+			{ 
 				cellarID : $scope.cellarID,
 				beerID : $scope.beerID,
 				tastingID : $scope.selectedTasting.ID,
 			},
-			success : function(data) {
+			function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					var index = $scope.tastings.indexOf($scope.selectedTasting);
@@ -218,7 +217,7 @@ app.controller("MyBeerController", function($scope){
 					showError("Failed to delete tasting : (" + obj.Error + ")");
 				}
 			}
-		});
+		);
 	};
 
 	$scope.clearForm = function() {

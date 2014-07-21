@@ -202,15 +202,14 @@ app.controller("CellarController", function($scope){
 	};
 
 	$scope.confirmDeleteBeer = function() {
-		$.fancybox.close();
-		$.ajax({
-			type : "POST",
-			url : "api/delete-beer",
-			data : { 
+		$scope.cancelFancybox();
+		$.post(
+			"api/delete-beer",
+			{ 
 				cellarID : $scope.cellarID,
 				beerID : $scope.selectedBeer.ID
 			},
-			success : function(data) {
+			function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					var index = $scope.beers.indexOf($scope.selectedBeer);
@@ -222,7 +221,7 @@ app.controller("CellarController", function($scope){
 					showError("Failed to delete beer : (" + obj.Error + ")");
 				}
 			}
-		});
+		);
 	};
 
 	$scope.transferBeer = function(beer) {
@@ -231,22 +230,21 @@ app.controller("CellarController", function($scope){
 	};
 
 	$scope.confirmTransferBeer = function() {
-		$.fancybox.close();
+		$scope.cancelFancybox();
 
 		if($scope.cellarID === $scope.transferToCellar.ID) {
 			showError("Ignoring transfer request, destination is the same as current location", WARN);
 			return;
 		}
 
-		$.ajax({
-			type : "POST",
-			url : "api/transfer-beer",
-			data : { 
+		$.post(
+			"api/transfer-beer",
+			{ 
 				fromCellarID : $scope.cellarID,
 				toCellarID : $scope.transferToCellar.ID,
 				beerID : $scope.selectedBeer.ID,
 			},
-			success : function(data) {
+			function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					var index = $scope.beers.indexOf($scope.selectedBeer);
@@ -265,7 +263,7 @@ app.controller("CellarController", function($scope){
 					showError("Failed to transfer beer : (" + obj.Error + ")");
 				}
 			}
-		});
+		);
 	};
 
 	$scope.clearForm = function() {
@@ -278,11 +276,9 @@ app.controller("CellarController", function($scope){
 	}
 
 	$scope.addNewBeer = function() {
-		$.ajax({
-			type : "POST",
-			url : "api/new-beer",
-			context : $(this),
-			data : {
+		$.post(
+			"api/new-beer",
+			{
 				cellarID : $scope.cellarID,
 				name : $scope.NewBeerName,
 				quantity : $scope.NewBeerQuantity,
@@ -290,7 +286,7 @@ app.controller("CellarController", function($scope){
 				brewed : $scope.NewBeerBrewed, 
 				added : $scope.NewBeerAdded,
 			},
-			success : function(data) {
+			function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					$scope.beers.push(obj.Data);
@@ -302,7 +298,7 @@ app.controller("CellarController", function($scope){
 					showError("Failed to add beer (" + obj.Error + ")");
 				}
 			}
-		});
+		);
 	};
 
 });
