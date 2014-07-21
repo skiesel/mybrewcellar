@@ -94,6 +94,10 @@ app.controller("MyCellarsController", function($scope){
 		window.location = "/cellar?id="+cellar.ID;
 	};
 
+	$scope.clearForm = function() {
+		$scope.newCellarName = "";
+	};
+
 	$scope.confirmDeleteCellar = function() {
 		$scope.cancelFancybox();
 		$.ajax({
@@ -127,6 +131,7 @@ app.controller("MyCellarsController", function($scope){
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					$scope.cellars.push(obj.Data);
+					$scope.clearForm();
 					$scope.$apply();
 					showError("Successfully added new cellar : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
 				}

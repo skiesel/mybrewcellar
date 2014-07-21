@@ -268,6 +268,15 @@ app.controller("CellarController", function($scope){
 		});
 	};
 
+	$scope.clearForm = function() {
+		$scope.NewBeerName = "";
+		$scope.NewBeerQuantity = 1;
+		$scope.NewBeerNotes = "";
+		$scope.NewBeerBrewed = "";
+		$scope.NewBeerAdded = "";
+		$("#quantity-slider").slider('value', 1);
+	}
+
 	$scope.addNewBeer = function() {
 		$.ajax({
 			type : "POST",
@@ -285,6 +294,7 @@ app.controller("CellarController", function($scope){
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
 					$scope.beers.push(obj.Data);
+					$scope.clearForm();
 					$scope.$apply();
 					showError("Successfully added new beer : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
 				}
