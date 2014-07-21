@@ -537,5 +537,8 @@ func handleDeleteTastingRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}	
 
-	writeSuccess(w, simpleTasting{ ID : tasting.ID })
+	writeSuccess(w, simpleTasting{ ID : tasting.ID,
+		Quantity : beer.Quantity,
+		AverageRating : beer.GetAverageRating(),
+	})
 }

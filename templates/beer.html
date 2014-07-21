@@ -210,6 +210,7 @@ app.controller("MyBeerController", function($scope){
 				if(obj.Status == "SUCCESS") {
 					var index = $scope.tastings.indexOf($scope.selectedTasting);
 					$scope.tastings.splice(index, 1);
+					$('#beer-average-rating').html(obj.Data.AverageRating);
 					$scope.$apply();
 					showError("Tasting successfully deleted", SUCCESS);
 				}
