@@ -1,159 +1,181 @@
 {{template "top.html" .}}
 
-<a href="/cellar?id={{ .Cellar.ID }}">back</a>
+<div class="container" ng-controller="MyBeerController">
 
-<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
+	<a href="/cellar?id={{ .Cellar.ID }}">back</a>
 
-{{ with .Beer }}
+	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
-<h1>{{ .Name }}</h1>
-<div class="">
+	{{ with .Beer }}
+
+	<h1>{{ .Name }}</h1>
+	<div class="">
+		<div class="row">
+			<div class="col-lg-3">
+				<p>Average Rating: <span id="beer-average-rating">{{ .GetAverageRating }}</span></p>
+				<p>Quantity: <span id="beer-quantity">{{ .Quantity }}</span></p>
+					{{ if .Brewed }}
+						<p>Brewed: {{ .Brewed.ToString }}</p>
+					{{ end }}
+				<p>Added: {{ .Added.ToString }}</p>
+				<p>Age: {{ .GetAgeString }}</p>
+			</div>
+			<div class="col-lg-3">
+			{{ if ne .Notes "" }}
+				<p>"{{ .Notes }}"</p>
+			{{ end }}
+			</div>
+		</div>
+	</div>
+	{{ end }}
+
+	<h2>Add new tasting note</h2>
+
 	<div class="row">
-		<div class="col-lg-3">
-			<p>Average Rating: <span id="beer-average-rating">{{ .GetAverageRating }}</span></p>
-			<p>Quantity: <span id="beer-quantity">{{ .Quantity }}</span></p>
-				{{ if .Brewed }}
-					<p>Brewed: {{ .Brewed.ToString }}</p>
-				{{ end }}
-			<p>Added: {{ .Added.ToString }}</p>
-			<p>Age: {{ .GetAgeString }}</p>
-		</div>
-		<div class="col-lg-3">
-		{{ if ne .Notes "" }}
-			<p>{{ .Notes }}&quot;</p>
-		{{ end }}
-		</div>
-	</div>
-</div>
+		<div class="col-lg-6">
+			<div class="form-horizontal">
 
-<h2>Add new tasting note</h2>
-
-<div class="row">
-	<div class="col-lg-6">
-		<div class="form-horizontal">
-
-			<div class="form-group">
-				<label class="col-sm-2 control-label">rating:</label>
-				<div class="col-sm-10">
-					<input class="form-control" type="text" readonly id="rating" name="rating" />
-					<div id="rating-slider"></div>
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label class="col-sm-2 control-label">tasted on:</label>
-				<div class="col-sm-10">
-					<input class="form-control datepicker" type="text" readonly id="tasted" name="tasted">
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label class="col-sm-2 control-label">notes:</label>
-				<div class="col-sm-10">
-					<textarea class="form-control" id="notes" name="notes"></textarea>
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label class="col-sm-2 control-label"></label>
-			  <div class="col-sm-10" style="text-align:center;">
-			    <button id="decrement-beer" class="btn btn-primary" type="button">
-			    	automatically decrement beer quantity by 1 (<span class="active">active</span>)
-			    </button>	
-				</div>
-			</div>
-			
-			<div class="form-group" style="text-align:center;">
-	      <span class="input-group-btn">
-	        <button id="new-tasting-submit" class="btn btn-default" type="button">add!</button>
-	      </span>
-	    </div>
-  </div>
-</div>
-</div>
-
-
-<h2>Existing tasting notes</h2><a id="edit-toggle" href="#">(edit)</a>
-
-<div class="row">
-	<div class="col-lg-6">
-		<div id="tastings" class="list-group">
-
-		  	<a id="tasting-row-template" href="#" class="list-group-item tasting-row" style="display:none;">
-		  		<div class="row">
-		    		<div class="col-lg-6">
-				    	<p class="list-group-item-text date"></p>
-				    </div>
-						<div class="col-lg-6">
-							<span class="remove-icon badge pull-right" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
-				    	<p class="list-group-item-text tasting-notes-text"></p>
-				    </div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">rating:</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text" readonly ng-model="NewTastingRating"/>
+						<div id="rating-slider"></div>
 					</div>
-		  	</a>
+				</div>
 
-
-		  {{ range .TastingsByID }}
-		  	<a id="Tasting{{.ID}}" href="#" class="list-group-item tasting-row" data-id="{{.ID}}">
-		  		<div class="row">
-		    		<div class="col-lg-6">
-				    	<p class="list-group-item-text">{{ .Date.ToString }}</p>
-				    </div>
-						<div class="col-lg-6">
-							<span class="remove-icon badge pull-right" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
-				    	<p class="list-group-item-text tasting-notes-text">{{ .Notes }}</p>
-				    </div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">tasted on:</label>
+					<div class="col-sm-10">
+						<input class="form-control datepicker" type="text" readonly id="tasted" name="tasted">
 					</div>
-		  	</a>
-		  {{ end }}
-		</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-2 control-label">notes:</label>
+					<div class="col-sm-10">
+						<textarea class="form-control" id="notes" name="notes"></textarea>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-2 control-label"></label>
+				  <div class="col-sm-10" style="text-align:center;">
+				    <button class="btn btn-primary" type="button" ng-click="setDecrementBeer($event)">
+				    	automatically decrement beer quantity by 1 (<span id="decrement-status">active</span>)
+				    </button>	
+					</div>
+				</div>
+				
+				<div class="form-group" style="text-align:center;">
+					<label class="col-sm-2 control-label"></label>
+				  <div class="col-sm-10" style="text-align:center;">
+			      <span class="input-group-btn">
+			        <button class="btn btn-default" type="button" ng-click="addTasting()">add!</button>
+			      </span>
+			    </div>
+		    </div>
+	  </div>
 	</div>
-</div>
+	</div>
 
-{{ end }}
 
-<a href="#delete-warning" id="delete-warning-link"></a>
-<div id="delete-warning" style="display:none;" class="text-center">
-	<p>Are you sure you want to delete this tasting note?</p>
-	<div class="well well-sm tasting-notes-text"></div>
-	<p>
-		<button id="delete-tasting" class="btn btn-default">yes</button>
-		<button class="btn btn-default cancel">no</button>
-	</p>
+	<h2>Existing tasting notes</h2><a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+
+	<div class="row">
+		<div class="col-lg-6">
+
+			  	<a class="list-group-item tasting-row" ng-repeat="tasting in tastings">
+			  		<div class="row">
+			    		<div class="col-lg-3">
+					    	<p class="list-group-item-text">{{"{{"}}tasting.TastedDate{{"}}"}}</p>
+					    	<p class="list-group-item-text">({{"{{"}}tasting.AgeTastedDate{{"}}"}})</p>
+					    </div>
+			    		<div class="col-lg-3">
+					    	<p class="list-group-item-text">{{"{{"}}tasting.Rating{{"}}"}}</p>
+					    </div>
+							<div class="col-lg-6">
+								<span class="remove-icon badge pull-right" style="display:none;" ng-click="deleteTasting(tasting)"><span class="glyphicon glyphicon-trash"></span></span>
+					    	<p class="list-group-item-text tasting-notes-text">{{"{{"}}tasting.Notes{{"}}"}}</p>
+					    </div>
+						</div>
+			  	</a>
+
+			</div>
+		</div>
+
+	<a href="#delete-warning" id="delete-warning-link"></a>
+	<div id="delete-warning" style="display:none;" class="text-center">
+		<p>Are you sure you want to delete this tasting note?</p>
+		<p ng-bind="selectedTasting.TastedDate"></p>
+		<div class="well well-sm" ng-bind="selectedTasting.Notes"></div>
+		<p>
+			<button class="btn btn-default" ng-click="confirmDeleteTasting()">yes</button>
+			<button class="btn btn-default" ng-click="cancelFancybox()">no</button>
+		</p>
+	</div>
+
 </div>
 
 <script>
 
-	var cellarID = {{ .Cellar.ID }};
-	var beerID = {{ .Beer.ID }};
-	var selectedTasting = new Object();
+app.controller("MyBeerController", function($scope){
+	$scope.cellarID = {{ .Cellar.ID }};
+	$scope.beerID = {{ .Beer.ID }};
+	$scope.selectedTasting = null;
+	$scope.decrementBeer = true;
+	$scope.NewTastingRating = 0;
 
-	$("#rating-slider").slider({
-		range: "min",
-		value: 0,
-		min: 0,
-		max: 10,
-		slide: function( event, ui ) {
-			$("#rating").val(ui.value);
+	$scope.tastings = [
+		{{ with $beer := .Beer }}
+		{{ range .TastingsByID }}
+		{
+			ID : {{ .ID }},
+			Rating : {{ .Rating }},
+			Notes : "{{ .Notes }}",
+			TastedDate : "{{ .Date.ToString }}",
+			AgeTastedDate : "{{ $beer.GetTastingAge . }}",
+		},
+		{{ end }}
+		{{ end }}
+	];
+
+	$scope.init = function() {
+		$("#rating-slider").slider({
+			min: 0,
+			max: 10,
+			slide: function( event, ui ) {
+				$scope.NewTastingRating = ui.value;
+				$scope.$apply();
+			}
+		});
+
+	  $(".datepicker").datepicker({
+	  	"dateFormat": "yy-mm-dd"
+	  });
+
+	  $("#delete-warning-link").fancybox();
+	};
+
+	$scope.init();
+
+
+	$scope.setDecrementBeer = function(event) {
+		var element = event.target;
+		if($(element).is("span")) {
+			element = $(element).parent();
 		}
-	});
-	$("#quantity").val($("#quantity-slider").slider("value"));
 
-  $(".datepicker").datepicker({
-  	"dateFormat": "yy-mm-dd"
-  });
+		$scope.decrementBeer = !$scope.decrementBeer;
+		if($scope.decrementBeer) {
+			$('#decrement-status').html('active');
+			$(element).removeClass('btn-default').addClass('btn-primary');
+		} else {
+			$('#decrement-status').html('inactive');
+			$(element).removeClass('btn-primary').addClass('btn-default');
+		}
+	};
 
-  $('#decrement-beer').click(function() {
-  	if($(this).hasClass('btn-primary')) {
-  		$(this).removeClass('btn-primary').addClass('btn-default');
-  		$(this).find('.active').html("inactive");
-  	}
-  	else {
-  		$(this).removeClass('btn-default').addClass('btn-primary');	
-  		$(this).find('.active').html("active");
-  	}
-  });
-
-	$('#edit-toggle').click(function(e) {
+	$scope.toggleEdit = function() {
 		if($('#edit-toggle').html() === "(edit)") {
 			$('#edit-toggle').html("(disable edit)")
 			$('.remove-icon').show();
@@ -162,41 +184,33 @@
 			$('#edit-toggle').html("(edit)")
 			$('.remove-icon').hide();
 		}
-		e.preventDefault();
-	});
+	};
 
-	$('.cancel').click(function() {	
+	$scope.cancelFancybox = function() {
 		$.fancybox.close();
-	});
+	};
 
-	$("#delete-warning-link").fancybox();
-
-	$('.remove-icon').click(removeTasting);
-	function removeTasting(e) {
-		e.preventDefault();
-		var tastingRow = $(this).closest('.tasting-row');
-		selectedTasting.id = $(tastingRow).data('id');
-		var tastingNotes = $(tastingRow).find(".tasting-notes-text").html();
-		console.log(tastingNotes);
-		$("#delete-warning").find(".tasting-notes-text").html(tastingNotes);
+	$scope.deleteTasting = function(tasting) {
 		$("#delete-warning-link").click();
-	}
+		$scope.selectedTasting = tasting;
+	};
 
-	$('#delete-tasting').click(function() {
-		$.fancybox.close();
+	$scope.confirmDeleteTasting = function() {
+		$scope.cancelFancybox();
 		$.ajax({
 			type : "POST",
 			url : "api/delete-tasting",
-			context : $(this),
 			data : { 
-				cellarID : cellarID,
-				beerID : beerID,
-				tastingID : selectedTasting.id,
+				cellarID : $scope.cellarID,
+				beerID : $scope.beerID,
+				tastingID : $scope.selectedTasting.ID,
 			},
 			success : function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
-					$('#Tasting'+obj.Data.ID).remove();
+					var index = $scope.tastings.indexOf($scope.selectedTasting);
+					$scope.tastings.splice(index, 1);
+					$scope.$apply();
 					showError("Tasting successfully deleted", SUCCESS);
 				}
 				else {
@@ -204,46 +218,37 @@
 				}
 			}
 		});
-	});
+	};
 
-	$('#new-tasting-submit').click(function() {
-		$.fancybox.close();
-		$.ajax({
-			type : "POST",
-			url : "api/new-tasting",
-			context : $(this),
-			data : { 
-				cellarID : cellarID,
-				beerID : beerID,
-				tastingID : selectedTasting.id,
-				rating : $('#rating').val(),
+	$scope.addTasting = function() {
+		$.post(
+			"api/new-tasting",
+			{ 
+				cellarID : $scope.cellarID,
+				beerID : $scope.beerID,
+				rating : $scope.NewTastingRating,
 				notes : $('#notes').val(),
 				tasted: $('#tasted').val(),
-				decrement: $('#decrement-beer').hasClass('btn-primary') ? "yes" : "no",
+				decrement: $scope.decrementBeer ? "yes" : "no",
 			},
-			success : function(data) {
+			function(data) {
 				var obj = $.parseJSON(data);
 				if(obj.Status == "SUCCESS") {
-					var newTasting = $("#tasting-row-template").clone().css("display", "block");
-					// newTasting.attr("href", "#");
-					newTasting.attr("id", "Tasting"+obj.Data.ID);
-					newTasting.data('id', obj.Data.ID);
-					newTasting.find('.date').html(obj.Data.TastedDate);
-					newTasting.find('.tasting-notes-text').html(obj.Data.Notes);
-					newTasting.find('.remove-icon').click(removeTasting);
-					$('#tastings').append(newTasting);
-
-					$('#beer-quantity').html(obj.Data.Quantity);
+					$scope.tastings.push(obj.Data);
 					$('#beer-average-rating').html(obj.Data.AverageRating);
-
+					$('#beer-quantity').html(obj.Data.Quantity);
+					$scope.$apply();
 					showError("Tasting successfully added", SUCCESS);
 				}
 				else {
 					showError("Failed to add tasting : (" + obj.Error + ")");
 				}
 			}
-		});
-	});
+		);
+	}
+
+});
+
 </script>
 
 {{template "bottom.html" .}}

@@ -1,61 +1,76 @@
 {{template "top.html" .}}
 
-<h1>Welcome {{ .Account.GetUsername }} to your cellars!</h1>
+<div class="container" ng-controller="MyCellarsController">
 
-<h2>Add a new cellar</h2>
+	<h1>Welcome {{ .Account.GetUsername }} to your cellars!</h1>
+
+	<h2>Add a new cellar</h2>
 
 
-<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
+	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
-<form id="new-cellar-form" method="POST" action="mycellars">
-	<div class="row">
-		<div class="col-lg-4">
-	    <div class="input-group">
-	      <input type="text" id="newcellar" name="newcellar" class="form-control"/>
-	      <span class="input-group-btn">
-	        <button id="new-cellar-submit" class="btn btn-default" type="button">add!</button>
-	      </span>
-	    </div><!-- /input-group -->
-	  </div><!-- /.col-lg-6 -->
-	</div><!-- /.row -->
-</form>
+	<div class="form-horizontal">
+		<div class="row">
+			<div class="col-lg-4">
+		    <div class="input-group">
+		      <input type="text" class="form-control" ng-model="newCellarName"/>
+		      <span class="input-group-btn">
+		        <button class="btn btn-default" type="button" ng-click="addCellar()">add!</button>
+		      </span>
+		    </div>
+		  </div>
+		</div>
+	</div>
 
-<h2>Existing cellars</h2><a id="edit-toggle" href="#">(edit)</a>
-<div id="cellars">
-	<div class="row">
-		<div class="col-lg-4">
-			<div class="list-group">
-				<a id="template-cellar-row" href="" class="list-group-item" style="display:none;">
-					<span class="cellar-name"></span>
-					<span class="remove-icon badge" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
-					<span class="badge">0</span>
-				</a>
-				{{ range .Account.Cellars }}
-					<a id="Cellar{{ .ID }}" href="/cellar?id={{ .ID }}" class="list-group-item cellar-row" data-id="{{.ID}}" data-name="{{.Name}}">
-						<span class="cellar-name">{{ .Name }}</span>
-						<span class="remove-icon badge" style="display:none;"><span class="glyphicon glyphicon-trash"></span></span>
-						<span class="badge">{{ len .Beers }}</span>
+	<h2>Existing cellars</h2><a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+	<div id="cellars">
+		<div class="row">
+			<div class="col-lg-4">
+				<div class="list-group">
+					<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
+						<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>
+						<span class="remove-icon badge" style="display:none;" ng-click="deleteCellar(cellar); $event.stopPropagation();">
+							<span class="glyphicon glyphicon-trash"></span>
+						</span>
+						<span class="badge">{{"{{"}}cellar.BeerCount{{"}}"}}</span>
 					</a>
-				{{ end }}
 				</div>
 			</div>
 		</div>
 	</div>
 
-<a href="#delete-warning" id="delete-warning-link"></a>
-<div id="delete-warning" style="display:none;" class="text-center">
-	<p>Are you sure you want to delete &quot;<span id="cellar-name"></span>&quot;?</p>
-	<p>Any beers in this cellar will also be deleted.</p>
-	<p>
-		<button id="delete-cellar" class="btn btn-default">yes</button>
-		<button id="cancel" class="btn btn-default">no</button>
-	</p>
+	<a href="#delete-warning" id="delete-warning-link"></a>
+	<div id="delete-warning" style="display:none;" class="text-center">
+		<p>Are you sure you want to delete &quot;{{"{{"}}selectedCellar.Name{{"}}"}}&quot;?</p>
+		<p>Any beers in this cellar will also be deleted.</p>
+		<p>
+			<button class="btn btn-default" ng-click="confirmDeleteCellar()">yes</button>
+			<button class="btn btn-default" ng-click="cancelFancybox()">no</button>
+		</p>
+	</div>
+
 </div>
 
-<script>
-	var selectedCellar = new Object();
 
-	$('#edit-toggle').click(function(e) {
+<script>
+
+$("#delete-warning-link").fancybox();
+
+app.controller("MyCellarsController", function($scope){
+
+	$scope.selectedCellar = null;
+
+	$scope.cellars = [
+		{{ range .Account.Cellars }}
+			{
+				ID : {{ .ID }},
+				Name : "{{ .Name }}",
+				BeerCount : {{ len .Beers }},
+			},
+		{{ end }}
+	];
+
+	$scope.toggleEdit = function() {
 		if($('#edit-toggle').html() === "(edit)") {
 			$('#edit-toggle').html("(disable edit)")
 			$('.remove-icon').show();
@@ -64,33 +79,35 @@
 			$('#edit-toggle').html("(edit)")
 			$('.remove-icon').hide();
 		}
-		e.preventDefault();
-	});
+	};
 
-	$("#delete-warning-link").fancybox();
-	$('.remove-icon').click(removeCellar);
-	function removeCellar(e) {
-		e.preventDefault();
-		selectedCellar.id = $(this).closest('.cellar-row').data('id');
-		selectedCellar.name = $(this).closest('.cellar-row').data('name');
-		$('#cellar-name').html(selectedCellar.name);
-		$("#delete-warning-link").click();		
-	}
-
-	$('#delete-cellar').click(function() {
+	$scope.cancelFancybox = function() {
 		$.fancybox.close();
+	};
+
+	$scope.deleteCellar = function(cellar) {
+		$scope.selectedCellar = cellar;
+		$("#delete-warning-link").click();
+	};
+
+	$scope.gotoCellar = function(cellar) {
+		window.location = "/cellar?id="+cellar.ID;
+	};
+
+	$scope.confirmDeleteCellar = function() {
+		$scope.cancelFancybox();
 		$.ajax({
 			type : "POST",
 			url : "api/delete-cellar",
-			context : $(this),
-			data : { cellarID : selectedCellar.id },
+			data : { 
+				cellarID : $scope.selectedCellar.ID
+			},
 			success : function(data) {
 				var obj = $.parseJSON(data);
-
-				console.log(obj);
-
 				if(obj.Status == "SUCCESS") {
-					$('#Cellar'+obj.Data.ID).remove();
+					var index = $scope.cellars.indexOf($scope.selectedCellar);
+					$scope.cellars.splice(index, 1);
+					$scope.$apply();
 					showError("Cellar successfully deleted : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
 				}
 				else {
@@ -98,36 +115,28 @@
 				}
 			}
 		});
-	});
+	};
 
-	$('#cancel').click(function() {	
-		$.fancybox.close();
-	});
-
-	$('#new-cellar-submit').click(function() {
+	$scope.addCellar = function() {
 		$.post(
 			"api/new-cellar",
-			{ cellarName : $('#newcellar').val() },
+			{
+				cellarName : $scope.newCellarName,
+			},
 			function(data) {
-				console.log(data);
-				
 				var obj = $.parseJSON(data);
-
 				if(obj.Status == "SUCCESS") {
-					var cellar = $('#template-cellar-row').clone().css("display", "block");
-					cellar.attr('id', "Cellar"+obj.Data.ID);
-					cellar.find(".cellar-name").html(obj.Data.Name);
-					cellar.attr("href", "/cellar?id=" + obj.Data.ID);
-					cellar.find('.remove-icon').click(removeCellar);
-					$('#cellars').find(".list-group").append(cellar);
+					$scope.cellars.push(obj.Data);
+					$scope.$apply();
 					showError("Successfully added new cellar : &quot;" + obj.Data.Name + "&quot;", SUCCESS);
 				}
 				else {
 					showError("Failed to add cellar (" + obj.Error + ")");
 				}
 			});
-	});
-
+	};
+	
+});
 </script>
 
 {{template "bottom.html" .}}

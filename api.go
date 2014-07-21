@@ -103,6 +103,7 @@ func handleUpdateAccount(w http.ResponseWriter, r *http.Request) {
 type simpleCellar struct {
 	ID   int
 	Name string
+	BeerCount int
 }
 
 func handleNewCellarRequest(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +131,7 @@ func handleNewCellarRequest(w http.ResponseWriter, r *http.Request) {
 		}
 
 		cellar := account.Cellars[newCellar]
-		writeSuccess(w, simpleCellar{ID: cellar.ID, Name: cellar.Name})
+		writeSuccess(w, simpleCellar{ID: cellar.ID, Name: cellar.Name, BeerCount : 0})
 		return
 	}
 
@@ -170,11 +171,12 @@ func handleDeleteCellarRequest(w http.ResponseWriter, r *http.Request) {
 type simpleBeer struct {
 	ID       int
 	Name     string
+	AverageRating int
+	Quantity int
 	Notes    string
 	Brewed   string
 	Added    string
 	Age      string
-	Quantity int
 }
 
 func handleNewBeerRequest(w http.ResponseWriter, r *http.Request) {
@@ -253,10 +255,11 @@ func handleNewBeerRequest(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, simpleBeer{
 		ID:       beer.ID,
 		Name:     beer.Name,
+		AverageRating: 0,
+		Quantity: quantity,
 		Notes:    beer.Notes,
 		Brewed:   beer.Brewed.ToString(),
 		Added:    beer.Added.ToString(),
-		Quantity: quantity,
 		Age:      beer.GetAgeString(),
 	})
 }
