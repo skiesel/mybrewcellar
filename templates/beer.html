@@ -79,7 +79,22 @@
 	</div>
 
 
-	<h2>Existing tasting notes</h2><a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+	<div class="row">
+		<div class="col-lg-6">
+			<h2>Existing tasting notes</h2>
+			<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+			  <label
+			  	ng-repeat="sort in sorts"
+			  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+			  	ng-click="resort(sort)"
+			  	>
+			    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+			    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+			  </label>
+			</div>
+		</div>
+	</div>
 
 	<div class="row">
 		<div class="col-lg-6">
@@ -118,7 +133,7 @@
 
 <script>
 
-app.controller("MyBeerController", function($scope){
+app.controller("MyBeerController", function($scope, $filter){
 	$scope.cellarID = {{ .Cellar.ID }};
 	$scope.beerID = {{ .Beer.ID }};
 	$scope.selectedTasting = null;
@@ -139,6 +154,28 @@ app.controller("MyBeerController", function($scope){
 		{{ end }}
 	];
 
+	$scope.sorts = [
+		{
+			Label: "rating",
+			Decreasing: true,
+			Active: false,
+			Sort: "Rating",
+		},
+		{
+			Label: "date",
+			Decreasing: true,
+			Reverse: true,
+			Active: false,
+			Sort: function(tasting) {
+				//This is bad, but it's not a big deal if it breaks
+				return new moment(new Date(tasting.TastedDate));
+			}
+		},
+	];
+
+	$scope.activeSort = $scope.sorts[0];
+	$scope.tastings = $filter('orderBy')($scope.tastings, $scope.activeSort.Sort, $scope.activeSort.Decreasing);
+
 	$scope.init = function() {
 		$("#rating-slider").slider({
 			min: 0,
@@ -158,6 +195,23 @@ app.controller("MyBeerController", function($scope){
 
 	$scope.init();
 
+	$scope.resort = function(sort) {
+		if($scope.activeSort === sort) {
+			$scope.activeSort.Decreasing = !$scope.activeSort.Decreasing;
+		}
+		else {
+			$scope.activeSort.Active = false;
+			$scope.activeSort = sort;
+			$scope.activeSort.Active = true;
+		}
+
+		if($scope.activeSort.Reverse) {
+			$scope.tastings = $filter('orderBy')($scope.tastings, $scope.activeSort.Sort, !$scope.activeSort.Decreasing);
+		}
+		else {
+			$scope.tastings = $filter('orderBy')($scope.tastings, $scope.activeSort.Sort, $scope.activeSort.Decreasing);	
+		}
+	};
 
 	$scope.setDecrementBeer = function(event) {
 		var element = event.target;

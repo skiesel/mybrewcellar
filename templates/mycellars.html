@@ -11,7 +11,7 @@
 
 	<div class="form-horizontal">
 		<div class="row">
-			<div class="col-lg-4">
+			<div class="col-lg-6">
 		    <div class="input-group">
 		      <input type="text" class="form-control" ng-model="newCellarName"/>
 		      <span class="input-group-btn">
@@ -22,10 +22,29 @@
 		</div>
 	</div>
 
-	<h2>Existing cellars</h2><a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+	<div class="row">
+		<div class="col-lg-6">
+			<h2>Existing cellars</h2>
+			<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+
+			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+			  
+			  <label
+			  	ng-repeat="sort in sorts"
+			  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+			  	ng-click="resort(sort)"
+			  	>
+			    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+			    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+			  </label>
+			  
+			</div>
+		</div>
+	</div>
+
 	<div id="cellars">
 		<div class="row">
-			<div class="col-lg-4">
+			<div class="col-lg-6">
 				<div class="list-group">
 					<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
 						<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>
@@ -56,7 +75,7 @@
 
 $("#delete-warning-link").fancybox();
 
-app.controller("MyCellarsController", function($scope){
+app.controller("MyCellarsController", function($scope, $filter){
 
 	$scope.selectedCellar = null;
 
@@ -70,6 +89,24 @@ app.controller("MyCellarsController", function($scope){
 		{{ end }}
 	];
 
+	$scope.sorts = [
+		{
+			Label: "name",
+			Field: "Name",
+			Decreasing: true,
+			Active: true,
+		},
+		{
+			Label: "# beers",
+			Field: "BeerCount",
+			Decreasing: true,
+			Active: false,
+		},
+	];
+
+	$scope.activeSort = $scope.sorts[0];
+	$scope.cellars = $filter('orderBy')($scope.cellars, $scope.activeSort.Field, $scope.activeSort.Decreasing);
+
 	$scope.toggleEdit = function() {
 		if($('#edit-toggle').html() === "(edit)") {
 			$('#edit-toggle').html("(disable edit)")
@@ -79,6 +116,18 @@ app.controller("MyCellarsController", function($scope){
 			$('#edit-toggle').html("(edit)")
 			$('.remove-icon').hide();
 		}
+	};
+
+	$scope.resort = function(sort) {
+		if($scope.activeSort === sort) {
+			$scope.activeSort.Decreasing = !$scope.activeSort.Decreasing;
+		}
+		else {
+			$scope.activeSort.Active = false;
+			$scope.activeSort = sort;
+			$scope.activeSort.Active = true;
+		}
+		$scope.cellars = $filter('orderBy')($scope.cellars, $scope.activeSort.Field, $scope.activeSort.Decreasing);
 	};
 
 	$scope.cancelFancybox = function() {

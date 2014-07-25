@@ -60,7 +60,23 @@
 		</div>
 	</div>
 
-	<h2>Existing beers</h2><a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+	<div class="row">
+		<div class="col-lg-6">
+			<h2>Existing beers</h2>
+			<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+			  <label
+			  	ng-repeat="sort in sorts"
+			  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+			  	ng-click="resort(sort)"
+			  	>
+			    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+			    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+			  </label>
+			</div>
+		</div>
+	</div>
+
 	<div class="row">
 		<div class="col-lg-6">
 			<div id="beer-rows" class="list-group">
@@ -121,7 +137,7 @@
 </div>
 <script>
 
-app.controller("CellarController", function($scope){
+app.controller("CellarController", function($scope, $filter){
 	$scope.cellarID = {{ .Cellar.ID }};
 	$scope.selectedBeer = null;
 	$scope.transferToCellar = null;
@@ -150,6 +166,42 @@ app.controller("CellarController", function($scope){
 		{{ end }}
 	];
 
+	$scope.sorts = [
+		{
+			Label: "name",
+			Decreasing: true,
+			Active: true,
+			Sort: "Name",
+		},
+		{
+			Label: "avg rating",
+			Decreasing: true,
+			Active: false,
+			Sort: "AverageRating",
+		},
+		{
+			Label: "quantity",
+			Decreasing: true,
+			Active: false,
+			Sort: "Quantity",
+		},
+		{
+			Label: "age",
+			Decreasing: true,
+			Reverse: true,
+			Active: false,
+			Sort: function(beer) {
+				//This is bad, but it's not a big deal if it breaks
+				var brewed = new moment(new Date(beer.Brewed));
+				var added = new moment(new Date(beer.Added));
+				return brewed < added ? brewed : added;
+			}
+		},
+	];
+
+	$scope.activeSort = $scope.sorts[0];
+	$scope.beers = $filter('orderBy')($scope.beers, $scope.activeSort.Sort, $scope.activeSort.Decreasing);
+
 	$scope.init = function() {
 		$("#delete-warning-link").fancybox();
 
@@ -172,6 +224,23 @@ app.controller("CellarController", function($scope){
 		});
 	};
 	$scope.init();
+
+	$scope.resort = function(sort) {
+		if($scope.activeSort === sort) {
+			$scope.activeSort.Decreasing = !$scope.activeSort.Decreasing;
+		}
+		else {
+			$scope.activeSort.Active = false;
+			$scope.activeSort = sort;
+			$scope.activeSort.Active = true;
+		}
+		if($scope.activeSort.Reverse) {
+			$scope.beers = $filter('orderBy')($scope.beers, $scope.activeSort.Sort, !$scope.activeSort.Decreasing);	
+		}
+		else {
+			$scope.beers = $filter('orderBy')($scope.beers, $scope.activeSort.Sort, $scope.activeSort.Decreasing);
+		}
+	};
 
 	$scope.setTransferToCellar = function(cellar) {
 		$scope.transferToCellar = cellar;
