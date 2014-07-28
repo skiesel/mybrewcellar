@@ -37,11 +37,11 @@ type TastingDS struct {
 
 func SaveAccount(c appengine.Context, account *Account) error {
 
-	for _, cellar := range account.CellarsByID {
-		if cellar != account.Cellars[cellar.Name] {
-			panic("Save Account: NOT THE SAME CELLAR")
-		}
-	}
+	// for _, cellar := range account.CellarsByID {
+	// 	if cellar != account.Cellars[cellar.Name] {
+	// 		panic("Save Account: NOT THE SAME CELLAR")
+	// 	}
+	// }
 
 	cacheItem := &memcache.Item{
 		Key:    account.User.Email,

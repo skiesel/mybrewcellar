@@ -1,13 +1,27 @@
 {{template "top.html" .}}
 
 <div class="container" ng-controller="CellarController">
+
 	<a href="/mycellars">back</a>
-	<h1>{{ .Cellar.Name }}</h1>
+
+	<div class="row" ng-show="!cellarEditingEnabled">
+		<div class="col-lg-6">
+			<h1>{{"{{"}}thisCellar.Name{{"}}"}}</h1>
+			<a ng-click="toggleCellarNameEditing()">(edit)</a>
+		</div>
+	</div>
+	<div class="row" ng-show="cellarEditingEnabled">
+		<div class="col-lg-5">
+			<input class="form-control" type="text" ng-model="thisCellar.Name" />
+		</div>
+		<div class="col-lg-1">
+			<button class="btn btn-default" ng-click="updateCellarName()">update</button>
+		</div>
+	</div>
 
 	<h2>Add a new beer</h2>
 
 	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
-
 
 	<div class="row">
 		<div class="col-lg-6">
@@ -63,7 +77,7 @@
 	<div class="row">
 		<div class="col-lg-6">
 			<h2>Existing beers</h2>
-			<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+			<a id="edit-toggle" ng-click="toggleEditBeers()">(edit)</a>
 			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
 			  <label
 			  	ng-repeat="sort in sorts"
@@ -122,7 +136,7 @@
 		<p>
 		<div class="btn-group" data-toggle="buttons" style="padding-bottom:10px;">
 			
-		  <label ng-attr-class="{{"{{"}}cellar.ID === cellarID && 'btn btn-default default-active' || 'btn btn-default' {{"}}"}}" ng-click="setTransferToCellar(cellar)" ng-repeat="cellar in cellars">
+		  <label ng-attr-class="{{"{{"}}cellar.ID === thisCellar.ID && 'btn btn-default default-active' || 'btn btn-default' {{"}}"}}" ng-click="setTransferToCellar(cellar)" ng-repeat="cellar in cellars">
 		    <input type="radio" name="cellarRadios"/> {{"{{"}}cellar.Name{{"}}"}}
 		  </label>
 
@@ -138,10 +152,14 @@
 <script>
 
 app.controller("CellarController", function($scope, $filter){
-	$scope.cellarID = {{ .Cellar.ID }};
+	$scope.thisCellar = {
+		ID : {{ .Cellar.ID }},
+		Name : {{ .Cellar.Name }},
+	};
 	$scope.selectedBeer = null;
 	$scope.transferToCellar = null;
 	$scope.NewBeerQuantity = 1;
+	$scope.cellarEditingEnabled = false;
 
 	$scope.cellars = [
 		{{ range .Account.Cellars }}
@@ -247,10 +265,35 @@ app.controller("CellarController", function($scope, $filter){
 	};
 
 	$scope.gotoBeer = function(beer) {
-		window.location = "/beer?cellar=" + $scope.cellarID + "&id=" + beer.ID;
+		window.location = "/beer?cellar=" + $scope.thisCellar.ID + "&id=" + beer.ID;
 	};
 
-	$scope.toggleEdit = function() {
+	$scope.toggleCellarNameEditing = function() {
+		$scope.cellarEditingEnabled = !$scope.cellarEditingEnabled;
+	}
+
+	$scope.updateCellarName = function() {
+		$.post(
+			"api/update-cellar",
+			{ 
+				cellarID : $scope.thisCellar.ID,
+				cellarName : $scope.thisCellar.Name,
+			},
+			function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					$scope.toggleCellarNameEditing();
+					$scope.$apply();
+					showError("Cellar name successfully updated", SUCCESS);
+				}
+				else {
+					showError("Failed to update cellar name : (" + obj.Error + ")");
+				}
+			}
+		);
+	}
+
+	$scope.toggleEditBeers = function() {
 		if($('#edit-toggle').html() === "(edit)") {
 			$('#edit-toggle').html("(disable edit)")
 			$('.editable').show();
@@ -275,7 +318,7 @@ app.controller("CellarController", function($scope, $filter){
 		$.post(
 			"api/delete-beer",
 			{ 
-				cellarID : $scope.cellarID,
+				cellarID : $scope.thisCellar.ID,
 				beerID : $scope.selectedBeer.ID
 			},
 			function(data) {
@@ -301,7 +344,7 @@ app.controller("CellarController", function($scope, $filter){
 	$scope.confirmTransferBeer = function() {
 		$scope.cancelFancybox();
 
-		if($scope.cellarID === $scope.transferToCellar.ID) {
+		if($scope.thisCellar.ID === $scope.transferToCellar.ID) {
 			showError("Ignoring transfer request, destination is the same as current location", WARN);
 			return;
 		}
@@ -309,7 +352,7 @@ app.controller("CellarController", function($scope, $filter){
 		$.post(
 			"api/transfer-beer",
 			{ 
-				fromCellarID : $scope.cellarID,
+				fromCellarID : $scope.thisCellar.ID,
 				toCellarID : $scope.transferToCellar.ID,
 				beerID : $scope.selectedBeer.ID,
 			},
@@ -348,7 +391,7 @@ app.controller("CellarController", function($scope, $filter){
 		$.post(
 			"api/new-beer",
 			{
-				cellarID : $scope.cellarID,
+				cellarID : $scope.thisCellar.ID,
 				name : $scope.NewBeerName,
 				quantity : $scope.NewBeerQuantity,
 				notes : $scope.NewBeerNotes,

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"github.com/mjibson/appstats"
 )
 
 type responseJson struct {
@@ -18,17 +19,18 @@ type responseJson struct {
 }
 
 func init() {
-	http.HandleFunc("/api/update-account", handleUpdateAccount)
+	http.Handle("/api/update-account", appstats.NewHandler(handleUpdateAccount))
 
-	http.HandleFunc("/api/new-cellar", handleNewCellarRequest)
-	http.HandleFunc("/api/delete-cellar", handleDeleteCellarRequest)
+	http.Handle("/api/new-cellar", appstats.NewHandler(handleNewCellarRequest))
+	http.Handle("/api/delete-cellar", appstats.NewHandler(handleDeleteCellarRequest))
+	http.Handle("/api/update-cellar", appstats.NewHandler(handleUpdateCellarRequest))
 
-	http.HandleFunc("/api/new-beer", handleNewBeerRequest)
-	http.HandleFunc("/api/delete-beer", handleDeleteBeerRequest)
-	http.HandleFunc("/api/transfer-beer", handleTransferBeerRequest)
+	http.Handle("/api/new-beer", appstats.NewHandler(handleNewBeerRequest))
+	http.Handle("/api/delete-beer", appstats.NewHandler(handleDeleteBeerRequest))
+	http.Handle("/api/transfer-beer", appstats.NewHandler(handleTransferBeerRequest))
 
-	http.HandleFunc("/api/new-tasting", handleNewTastingRequest)
-	http.HandleFunc("/api/delete-tasting", handleDeleteTastingRequest)
+	http.Handle("/api/new-tasting", appstats.NewHandler(handleNewTastingRequest))
+	http.Handle("/api/delete-tasting", appstats.NewHandler(handleDeleteTastingRequest))
 }
 
 func getAccount(c appengine.Context) *models.Account {
@@ -75,8 +77,7 @@ type simpleUser struct {
 	Username string
 }
 
-func handleUpdateAccount(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleUpdateAccount(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	newUsername := r.PostFormValue("username")
 
@@ -106,8 +107,7 @@ type simpleCellar struct {
 	BeerCount int
 }
 
-func handleNewCellarRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleNewCellarRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	newCellar := r.PostFormValue("cellarName")
 
@@ -138,8 +138,44 @@ func handleNewCellarRequest(w http.ResponseWriter, r *http.Request) {
 	writeError(w, errors.New("No cellar supplied"))
 }
 
-func handleDeleteCellarRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleUpdateCellarRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
+
+	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	cellarName := r.PostFormValue("cellarName")
+
+	if cellarName != "" {
+		account := getAccount(c)
+		if account == nil {
+			writeError(w, errors.New("no account"))
+			return
+		}
+
+		err := account.UpdateCellarName(cellarID, cellarName)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = models.SaveAccount(c, account)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		cellar := account.CellarsByID[cellarID]
+		writeSuccess(w, simpleCellar{ID: cellar.ID, Name: cellar.Name})
+		return
+	}
+
+	writeError(w, errors.New("No cellar supplied"))
+}
+
+func handleDeleteCellarRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	deleteCellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
 	if err != nil {
@@ -179,9 +215,8 @@ type simpleBeer struct {
 	Age      string
 }
 
-func handleNewBeerRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-
+func handleNewBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
+	
 	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
 	if err != nil {
 		writeError(w, err)
@@ -264,8 +299,7 @@ func handleNewBeerRequest(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func handleDeleteBeerRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleDeleteBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
 	if err != nil {
@@ -315,8 +349,7 @@ type simpleTransfer struct {
 	Beer       simpleBeer
 }
 
-func handleTransferBeerRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleTransferBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	fromCellarID, err := strconv.Atoi(r.PostFormValue("fromCellarID"))
 	if err != nil {
@@ -400,8 +433,7 @@ type simpleTasting struct {
 	AverageRating float64
 }
 
-func handleNewTastingRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleNewTastingRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
 	if err != nil {
@@ -484,8 +516,7 @@ func handleNewTastingRequest(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func handleDeleteTastingRequest(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func handleDeleteTastingRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 
 	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
 	if err != nil {

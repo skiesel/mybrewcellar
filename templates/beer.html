@@ -6,28 +6,33 @@
 
 	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
-	{{ with .Beer }}
 
-	<h1>{{ .Name }}</h1>
-	<div class="">
-		<div class="row">
-			<div class="col-lg-3">
-				<p>Average Rating: <span id="beer-average-rating">{{ .GetAverageRating }}</span></p>
-				<p>Quantity: <span id="beer-quantity">{{ .Quantity }}</span></p>
-					{{ if .Brewed }}
-						<p>Brewed: {{ .Brewed.ToString }}</p>
-					{{ end }}
-				<p>Added: {{ .Added.ToString }}</p>
-				<p>Age: {{ .GetAgeString }}</p>
-			</div>
-			<div class="col-lg-3">
-			{{ if ne .Notes "" }}
-				<p>"{{ .Notes }}"</p>
-			{{ end }}
-			</div>
+	<div class="row" ng-show="!beerEditingEnabled">
+		<div class="col-lg-3">
+			<h1>{{"{{"}}thisBeer.Name{{"}}"}}</h1>
+			<a ng-click="toggleBeerEditing()">(edit)</a>
+			<p>Average Rating: {{"{{"}}thisBeer.AverageRating{{"}}"}}</p>
+			<p>Quantity: {{"{{"}}thisBeer.Quantity{{"}}"}}</p>
+			<p>Brewed: {{"{{"}}thisBeer.Brewed{{"}}"}}</p>
+			<p>Added: {{"{{"}}thisBeer.Added{{"}}"}}</p>
+			<p>Age: {{"{{"}}thisBeer.Age{{"}}"}}</p>
+		</div>
+		<div class="col-lg-3">
+		<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
 		</div>
 	</div>
-	{{ end }}
+	
+	<div class="row" ng-show="beerEditingEnabled">
+		<div class="col-lg-3">
+			<input class="form-control" type="text" ng-model="thisBeer.Name" />
+			<input class="form-control" type="text" ng-model="thisBeer.Quantity" />
+			<input class="form-control datepicker" type="text" readonly ng-model="updatedBrewDate">
+			<button class="btn btn-default" ng-click="updateBeer()">update</button>
+		</div>
+		<div class="col-lg-3">
+		<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
+		</div>
+	</div>
 
 	<h2>Add new tasting note</h2>
 
@@ -36,30 +41,30 @@
 			<div class="form-horizontal">
 
 				<div class="form-group">
-					<label class="col-sm-2 control-label">rating:</label>
-					<div class="col-sm-10">
+					<label class="col-lg-2 control-label">rating:</label>
+					<div class="col-lg-10">
 						<input class="form-control" type="text" readonly ng-model="NewTastingRating"/>
 						<div id="rating-slider"></div>
 					</div>
 				</div>
 
 				<div class="form-group">
-					<label class="col-sm-2 control-label">tasted on:</label>
-					<div class="col-sm-10">
+					<label class="col-lg-2 control-label">tasted on:</label>
+					<div class="col-lg-10">
 						<input class="form-control datepicker" type="text" readonly ng-model="NewTastingDate">
 					</div>
 				</div>
 
 				<div class="form-group">
-					<label class="col-sm-2 control-label">notes:</label>
-					<div class="col-sm-10">
+					<label class="col-lg-2 control-label">notes:</label>
+					<div class="col-lg-10">
 						<textarea class="form-control" id="notes" name="notes" ng-model="NewTastingNotes"></textarea>
 					</div>
 				</div>
 
 				<div class="form-group">
-					<label class="col-sm-2 control-label"></label>
-				  <div class="col-sm-10" style="text-align:center;">
+					<label class="col-lg-2 control-label"></label>
+				  <div class="col-lg-10" style="text-align:center;">
 				    <button class="btn btn-primary" type="button" ng-click="setDecrementBeer($event)">
 				    	automatically decrement beer quantity by 1 (<span id="decrement-status">active</span>)
 				    </button>	
@@ -67,8 +72,8 @@
 				</div>
 				
 				<div class="form-group" style="text-align:center;">
-					<label class="col-sm-2 control-label"></label>
-				  <div class="col-sm-10" style="text-align:center;">
+					<label class="col-lg-2 control-label"></label>
+				  <div class="col-lg-10" style="text-align:center;">
 			      <span class="input-group-btn">
 			        <button class="btn btn-default" type="button" ng-click="addTasting()">add!</button>
 			      </span>
@@ -135,11 +140,24 @@
 
 app.controller("MyBeerController", function($scope, $filter){
 	$scope.cellarID = {{ .Cellar.ID }};
-	$scope.beerID = {{ .Beer.ID }};
 	$scope.selectedTasting = null;
 	$scope.decrementBeer = true;
 	$scope.NewTastingRating = 0;
+	$scope.beerEditingEnabled = false;
 
+	{{ with .Beer }}
+	$scope.thisBeer = {
+		ID : {{ .ID }},
+		Name : "{{ .Name }}",
+		AverageRating : {{ .GetAverageRating }},
+		Quantity : {{ .Quantity }},
+		Brewed : "{{ .Brewed.ToString }}",
+		Added : "{{ .Added.ToString }}",
+		Age : "{{ .GetAgeString }}",
+		Notes : "{{ .Notes}}",
+	};
+	{{ end }}
+	
 	$scope.tastings = [
 		{{ with $beer := .Beer }}
 		{{ range .TastingsByID }}
@@ -213,6 +231,14 @@ app.controller("MyBeerController", function($scope, $filter){
 		}
 	};
 
+	$scope.toggleBeerEditing = function() {
+		$scope.beerEditingEnabled = !$scope.beerEditingEnabled;
+	}
+
+	$scope.updateBeer = function() {
+		$scope.toggleBeerEditing();
+	}
+
 	$scope.setDecrementBeer = function(event) {
 		var element = event.target;
 		if($(element).is("span")) {
@@ -255,7 +281,7 @@ app.controller("MyBeerController", function($scope, $filter){
 			"api/delete-tasting",
 			{ 
 				cellarID : $scope.cellarID,
-				beerID : $scope.beerID,
+				beerID : $scope.thisBeer.ID,
 				tastingID : $scope.selectedTasting.ID,
 			},
 			function(data) {
@@ -287,7 +313,7 @@ app.controller("MyBeerController", function($scope, $filter){
 			"api/new-tasting",
 			{ 
 				cellarID : $scope.cellarID,
-				beerID : $scope.beerID,
+				beerID : $scope.thisBeer.ID,
 				rating : $scope.NewTastingRating,
 				notes : $scope.NewTastingNotes,
 				tasted: $scope.NewTastingDate,

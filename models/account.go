@@ -70,6 +70,23 @@ func (account *Account) AddCellar(cellarName string) error {
 	return nil
 }
 
+func (account *Account) UpdateCellarName(cellarID int, cellarName string) error {
+	if account.Cellars[cellarName] != nil {
+		return errors.New("Cellar Already Exists")
+	}
+
+	cellar := account.CellarsByID[cellarID]
+	if cellar == nil {
+		return errors.New("Cellar Does Not Exists")
+	}
+
+	delete(account.Cellars, cellar.Name)
+	account.CellarsByID[cellarID].Name = cellarName
+	account.Cellars[cellarName] = account.CellarsByID[cellarID]
+
+	return nil
+}
+
 func (account *Account) GetCellarByID(idStr string) *Cellar {
 	id, _ := strconv.Atoi(idStr)
 	return account.CellarsByID[id]

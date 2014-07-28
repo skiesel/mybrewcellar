@@ -4,13 +4,15 @@ import (
 	"models"
 	//"github.com/skiesel/mybrewcellar/models"
 	"net/http"
+	"github.com/mjibson/appstats"
+	"appengine"
 )
 
 func init() {
-	http.HandleFunc("/mycellars", mycellars)
+	http.Handle("/mycellars", appstats.NewHandler(mycellars))
 }
 
-func mycellars(w http.ResponseWriter, r *http.Request) {
+func mycellars(c appengine.Context, w http.ResponseWriter, r *http.Request) {
 	page := models.NewPage(r)
 	page.Title = "My Cellars"
 	pageTemplate := BuildTemplate(MYCELLARS)
