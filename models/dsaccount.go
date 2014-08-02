@@ -37,12 +37,6 @@ type TastingDS struct {
 
 func SaveAccount(c appengine.Context, account *Account) error {
 
-	// for _, cellar := range account.CellarsByID {
-	// 	if cellar != account.Cellars[cellar.Name] {
-	// 		panic("Save Account: NOT THE SAME CELLAR")
-	// 	}
-	// }
-
 	cacheItem := &memcache.Item{
 		Key:    account.User.Email,
 		Object: account,
@@ -68,14 +62,42 @@ func SaveAccount(c appengine.Context, account *Account) error {
 			return nil
 		}
 
+		cellarQuery := datastore.NewQuery("Cellar").Ancestor(accountKey)
+		cellarResults := cellarQuery.Run(c)
+		oldCellarKeys := map[int]*datastore.Key{}
+		for {
+			cellarDS := &CellarDS{}
+			cellarKey, err := cellarResults.Next(cellarDS)
+			if err == datastore.Done {
+				c.Errorf("no more cellars")
+				break
+			}
+			if err != nil {
+				c.Errorf("fetching next Cellar: %v", err)
+				break
+			}
+			oldCellarKeys[cellarDS.ID] = cellarKey
+		}
+
 		cellarKeys := make([]*datastore.Key, len(account.Cellars))
 		cellarDSs := make([]*CellarDS, len(account.Cellars))
 		beerCount := 0
 		tastingCount := 0
 
+		for cellarID, datastoreKey := range oldCellarKeys {
+			if account.CellarsByID[cellarID] == nil {
+				datastore.Delete(c, datastoreKey);
+			}
+		}
+
 		i := 0
 		for _, cellar := range account.Cellars {
-			cellarKeys[i] = datastore.NewIncompleteKey(c, "Cellar", accountKey)
+			existingKey := oldCellarKeys[cellar.ID]
+			if existingKey != nil {
+				cellarKeys[i] = existingKey
+			} else {
+				cellarKeys[i] = datastore.NewIncompleteKey(c, "Cellar", accountKey)
+			}
 			cellarDSs[i] = cellar.toCellarDS()
 			i++
 			beerCount += len(cellar.Beers)
@@ -101,8 +123,36 @@ func SaveAccount(c appengine.Context, account *Account) error {
 		for i, cellarDS := range cellarDSs {
 			cellar := account.CellarsByID[cellarDS.ID]
 
+			oldBeerKeys := map[int]*datastore.Key{}
+			beerQuery := datastore.NewQuery("Beer").Ancestor(cellarKeys[i])
+			beerResults := beerQuery.Run(c)
+			for {
+				beerDS := &BeerDS{}
+				beerKey, err := beerResults.Next(beerDS)
+				if err == datastore.Done {
+					break
+				}
+				if err != nil {
+					c.Errorf("fetching next Beer: %v", err)
+					break
+				}
+				oldBeerKeys[beerDS.ID] = beerKey
+			}
+
+			for beerID, datastoreKey := range oldBeerKeys {
+				if cellar.BeersByID[beerID] == nil {
+					datastore.Delete(c, datastoreKey);
+				}
+			}
+
+
 			for _, beer := range cellar.Beers {
-				beerKeys[curBeerIndex] = datastore.NewIncompleteKey(c, "Beer", cellarKeys[i])
+				existingKey, exists := oldBeerKeys[beer.ID]
+				if exists {
+					beerKeys[curBeerIndex] = existingKey
+				} else {
+					beerKeys[curBeerIndex] = datastore.NewIncompleteKey(c, "Beer", cellarKeys[i])
+				}
 				beerDSs[curBeerIndex] = beer.toBeerDS()
 				curBeerIndex++
 			}
@@ -122,8 +172,35 @@ func SaveAccount(c appengine.Context, account *Account) error {
 
 			for _, beer := range cellar.Beers {
 
+				oldTastingKeys := map[int]*datastore.Key{}
+				tastingQuery := datastore.NewQuery("Tasting").Ancestor(beerKeys[curBeerIndex])
+				tastingResults := tastingQuery.Run(c)
+				for {
+					tastingDS := &TastingDS{}
+					tastingKey, err := tastingResults.Next(tastingDS)
+					if err == datastore.Done {
+						break
+					}
+					if err != nil {
+						c.Errorf("fetching next Tasting: %v", err)
+						break
+					}
+					oldTastingKeys[tastingDS.ID] = tastingKey
+				}
+
+				for tastingID, datastoreKey := range oldTastingKeys {
+					if beer.TastingsByID[tastingID] == nil {
+						datastore.Delete(c, datastoreKey);
+					}
+				}
+
 				for _, tasting := range beer.TastingsByID {
-					tastingKeys[curTastingIndex] = datastore.NewIncompleteKey(c, "Tasting", beerKeys[curBeerIndex])
+					existingKey, exists := oldTastingKeys[tasting.ID]
+					if exists {
+						tastingKeys[curTastingIndex] = existingKey
+					} else {
+						tastingKeys[curTastingIndex] = datastore.NewIncompleteKey(c, "Tasting", beerKeys[curBeerIndex])
+					}
 					tastingDSs[curTastingIndex] = tasting.toTastingDS()
 					curTastingIndex++
 				}
@@ -226,6 +303,8 @@ func GetAccount(c appengine.Context, email string) *Account {
 		}
 
 		cellar := cellarDS.toCellar()
+
+		c.Errorf("%s", cellar.Name)
 
 		account.Cellars[cellarDS.Name] = cellar
 		account.CellarsByID[cellar.ID] = cellar
