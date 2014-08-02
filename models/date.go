@@ -1,8 +1,6 @@
 package models
 
 import (
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -16,26 +14,15 @@ func Now() *Date {
 	if err != nil {
 		return nil
 	}
-	time := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, utc)
+	t := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, utc)
 	return &Date{
-		Date: time,
+		Date: t,
 	}
 }
 
 func ParseDate(date string) *Date {
-	tokens := strings.Split(date, "-")
-	if len(tokens) != 3 {
-		return nil
-	}
-	year, err := strconv.Atoi(tokens[0])
-	if err != nil {
-		return nil
-	}
-	month, err := strconv.Atoi(tokens[1])
-	if err != nil {
-		return nil
-	}
-	day, err := strconv.Atoi(tokens[2])
+	const layout = "Jan 2, 2006"
+	t, err := time.Parse(layout, date)
 	if err != nil {
 		return nil
 	}
@@ -43,9 +30,9 @@ func ParseDate(date string) *Date {
 	if err != nil {
 		return nil
 	}
-	time := time.Date(year, time.Month(month), day, 0, 0, 0, 0, utc)
+	t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, utc)
 	return &Date{
-		Date: time,
+		Date: t,
 	}
 }
 

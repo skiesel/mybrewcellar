@@ -18,19 +18,20 @@
 			<p>Age: {{"{{"}}thisBeer.Age{{"}}"}}</p>
 		</div>
 		<div class="col-lg-3">
-		<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
+			<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
 		</div>
 	</div>
 	
 	<div class="row" ng-show="beerEditingEnabled">
-		<div class="col-lg-3">
+		<div class="col-lg-6">
 			<input class="form-control" type="text" ng-model="thisBeer.Name" />
-			<input class="form-control" type="text" ng-model="thisBeer.Quantity" />
-			<input class="form-control datepicker" type="text" readonly ng-model="updatedBrewDate">
+			<input class="form-control" type="text" readonly ng-model="thisBeer.Quantity" />
+			<div id="quantity-slider"></div>
+			<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Brewed">
+			<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Added">
+			<textarea class="form-control" ng-model="thisBeer.Notes"></textarea>
 			<button class="btn btn-default" ng-click="updateBeer()">update</button>
-		</div>
-		<div class="col-lg-3">
-		<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
+			<a ng-click="toggleBeerEditing()">cancel</a>
 		</div>
 	</div>
 
@@ -104,7 +105,7 @@
 	<div class="row">
 		<div class="col-lg-6">
 
-			  	<a class="list-group-item tasting-row" ng-repeat="tasting in tastings">
+			  	<a class="list-group-item tasting-row" ng-click="gotoTasting(tasting)" ng-repeat="tasting in tastings">
 			  		<div class="row">
 			    		<div class="col-lg-3">
 					    	<p class="list-group-item-text">{{"{{"}}tasting.TastedDate{{"}}"}}</p>
@@ -185,8 +186,7 @@ app.controller("MyBeerController", function($scope, $filter){
 			Reverse: true,
 			Active: false,
 			Sort: function(tasting) {
-				//This is bad, but it's not a big deal if it breaks
-				return new moment(new Date(tasting.TastedDate));
+				return new moment(tasting.TastedDate, "MMM D, YYYY");
 			}
 		},
 	];
@@ -204,8 +204,17 @@ app.controller("MyBeerController", function($scope, $filter){
 			}
 		});
 
+		$("#quantity-slider").slider({
+			min: 1,
+			max: 100,
+			slide: function( event, ui ) {
+				$scope.thisBeer.Quantity = ui.value;
+				$scope.$apply();
+			}
+		});
+
 	  $(".datepicker").datepicker({
-	  	"dateFormat": "yy-mm-dd"
+	  	"dateFormat": "M dd, yy"
 	  });
 
 	  $("#delete-warning-link").fancybox();
@@ -229,6 +238,10 @@ app.controller("MyBeerController", function($scope, $filter){
 		else {
 			$scope.tastings = $filter('orderBy')($scope.tastings, $scope.activeSort.Sort, $scope.activeSort.Decreasing);	
 		}
+	};
+
+	$scope.gotoTasting = function(tasting) {
+		window.location = "/tasting?cellar=" + $scope.cellarID + "&beer=" + $scope.thisBeer.ID + "&id=" + tasting.ID;
 	};
 
 	$scope.toggleBeerEditing = function() {
@@ -324,13 +337,42 @@ app.controller("MyBeerController", function($scope, $filter){
 				if(obj.Status == "SUCCESS") {
 					$scope.tastings.push(obj.Data);
 					$scope.clearForm();
-					$('#beer-average-rating').html(obj.Data.AverageRating);
-					$('#beer-quantity').html(obj.Data.Quantity);
+					$scope.thisBeer.AverageRating = obj.Data.AverageRating;
+					$scope.thisBeer.Quantity = obj.Data.Quantity;
 					$scope.$apply();
 					showError("Tasting successfully added", SUCCESS);
 				}
 				else {
 					showError("Failed to add tasting : (" + obj.Error + ")");
+				}
+			}
+		);
+	}
+
+	$scope.updateBeer = function() {
+		$.post(
+			"api/update-beer",
+			{
+				cellarID : $scope.cellarID,
+				beerID : $scope.thisBeer.ID,
+				name : $scope.thisBeer.Name,
+				quantity : $scope.thisBeer.Quantity,
+				notes : $scope.thisBeer.Notes,
+				brewed : $scope.thisBeer.Brewed,
+				added : $scope.thisBeer.Added,
+			},
+			function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					$scope.toggleBeerEditing();
+					$scope.thisBeer.Brewed = obj.Data.Brewed;
+					$scope.thisBeer.Added = obj.Data.Added;
+					$scope.thisBeer.Age = obj.Data.Age;
+					$scope.$apply();
+					showError("Successfully updated beer", SUCCESS);
+				}
+				else {
+					showError("Failed to update beer (" + obj.Error + ")");
 				}
 			}
 		);

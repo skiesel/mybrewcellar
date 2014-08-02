@@ -11,11 +11,12 @@
 		</div>
 	</div>
 	<div class="row" ng-show="cellarEditingEnabled">
-		<div class="col-lg-5">
+		<div class="col-lg-4">
 			<input class="form-control" type="text" ng-model="thisCellar.Name" />
 		</div>
-		<div class="col-lg-1">
+		<div class="col-lg-2">
 			<button class="btn btn-default" ng-click="updateCellarName()">update</button>
+			<a ng-click="toggleCellarNameEditing()">cancel</a>
 		</div>
 	</div>
 
@@ -209,9 +210,8 @@ app.controller("CellarController", function($scope, $filter){
 			Reverse: true,
 			Active: false,
 			Sort: function(beer) {
-				//This is bad, but it's not a big deal if it breaks
-				var brewed = new moment(new Date(beer.Brewed));
-				var added = new moment(new Date(beer.Added));
+				var brewed = new moment(beer.Brewed, "MMM D, YYYY");
+				var added = new moment(beer.Added, "MMM D, YYYY");
 				return brewed < added ? brewed : added;
 			}
 		},
@@ -230,7 +230,7 @@ app.controller("CellarController", function($scope, $filter){
 
 		$('.btn').button();
 
-	  $(".datepicker").datepicker({ "dateFormat": "yy-mm-dd" });
+	  $(".datepicker").datepicker({ "dateFormat": "M d, yy" });
 
 		$("#quantity-slider").slider({
 			min: 1,

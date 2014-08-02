@@ -12,6 +12,7 @@ type Page struct {
 	Account *Account
 	Cellar  *Cellar
 	Beer    *Beer
+	Tasting *Tasting
 	Error   string
 }
 
@@ -22,6 +23,7 @@ func NewPage(r *http.Request) Page {
 		Account: GuestAccount(),
 		Cellar:  nil,
 		Beer:    nil,
+		Tasting: nil,
 		Error:   "",
 	}
 

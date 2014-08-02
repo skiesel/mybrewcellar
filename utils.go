@@ -10,6 +10,7 @@ const (
 	CELLAR    = "cellar.html"
 	ACCOUNT   = "account.html"
 	BEER      = "beer.html"
+	TASTING   = "tasting.html"
 )
 
 func BuildTemplate(templateName string) *template.Template {

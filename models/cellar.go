@@ -143,3 +143,8 @@ func (beer *Beer) GetAgeString() string {
 	today := Now()
 	return getDurationString(birthday, today)
 }
+
+func (beer *Beer) GetTastingByID(idStr string) *Tasting {
+	id, _ := strconv.Atoi(idStr)
+	return beer.TastingsByID[id]
+}

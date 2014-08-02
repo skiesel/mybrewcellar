@@ -28,6 +28,7 @@ func init() {
 	http.Handle("/api/new-beer", appstats.NewHandler(handleNewBeerRequest))
 	http.Handle("/api/delete-beer", appstats.NewHandler(handleDeleteBeerRequest))
 	http.Handle("/api/transfer-beer", appstats.NewHandler(handleTransferBeerRequest))
+	http.Handle("/api/update-beer", appstats.NewHandler(handleUpdateBeerRequest))
 
 	http.Handle("/api/new-tasting", appstats.NewHandler(handleNewTastingRequest))
 	http.Handle("/api/delete-tasting", appstats.NewHandler(handleDeleteTastingRequest))
@@ -420,6 +421,91 @@ func handleTransferBeerRequest(c appengine.Context, w http.ResponseWriter, r *ht
 			ID:   oldBeerID,
 			Name: beer.Name,
 		},
+	})
+}
+
+func handleUpdateBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
+
+	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	beerID, err := strconv.Atoi(r.PostFormValue("beerID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	quantity, err := strconv.Atoi(r.PostFormValue("quantity"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	account := getAccount(c)
+	if account == nil {
+		writeError(w, errors.New("no account"))
+		return
+	}
+
+	cellar := account.CellarsByID[cellarID]
+	if cellar == nil {
+		writeError(w, errors.New("Could not update beer, cellar not found"))
+		return
+	}
+	
+	beer := cellar.BeersByID[beerID]
+	if beer == nil {
+		writeError(w, errors.New("Could not update beer, beer not found"))
+		return
+	}
+	
+	name := r.PostFormValue("name")
+	notes := r.PostFormValue("notes")
+
+	brewed := r.PostFormValue("brewed")
+	var brewDate *models.Date
+	if brewed == "" {
+		brewDate = models.Now()
+	} else {
+		brewDate = models.ParseDate(brewed)
+	}
+
+	added := r.PostFormValue("added")
+	var addedDate *models.Date
+	if added == "" {
+		addedDate = models.Now()
+	} else {
+		addedDate = models.ParseDate(added)
+	}
+
+	delete(cellar.Beers, beer.Name)
+
+	beer.Name = name
+	beer.Quantity = quantity
+	beer.Notes = notes
+	beer.Brewed = brewDate
+	beer.Added = addedDate
+
+	cellar.Beers[beer.Name] = beer
+
+
+	err = models.SaveAccount(c, account)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeSuccess(w, simpleBeer{
+		ID:       beer.ID,
+		Name:     beer.Name,
+		AverageRating: 0,
+		Quantity: quantity,
+		Notes:    beer.Notes,
+		Brewed:   beer.Brewed.ToString(),
+		Added:    beer.Added.ToString(),
+		Age:      beer.GetAgeString(),
 	})
 }
 
