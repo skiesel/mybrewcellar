@@ -32,6 +32,7 @@ func init() {
 
 	http.Handle("/api/new-tasting", appstats.NewHandler(handleNewTastingRequest))
 	http.Handle("/api/delete-tasting", appstats.NewHandler(handleDeleteTastingRequest))
+	http.Handle("/api/update-tasting", appstats.NewHandler(handleUpdateTastingRequest))
 }
 
 func getAccount(c appengine.Context) *models.Account {
@@ -655,6 +656,87 @@ func handleDeleteTastingRequest(c appengine.Context, w http.ResponseWriter, r *h
 	}	
 
 	writeSuccess(w, simpleTasting{ ID : tasting.ID,
+		Quantity : beer.Quantity,
+		AverageRating : beer.GetAverageRating(),
+	})
+}
+
+func handleUpdateTastingRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
+
+	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	beerID, err := strconv.Atoi(r.PostFormValue("beerID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	tastingID, err := strconv.Atoi(r.PostFormValue("tastingID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	tastedDateStr := r.PostFormValue("tastedDate")
+	var tastedDate *models.Date
+	if tastedDateStr == "" {
+		tastedDate = models.Now()
+	} else {
+		tastedDate = models.ParseDate(tastedDateStr)
+	}
+
+	rating, err := strconv.Atoi(r.PostFormValue("rating"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	notes := r.PostFormValue("notes")
+
+	account := getAccount(c)
+	if account == nil {
+		writeError(w, errors.New("no account"))
+		return
+	}
+
+	cellar := account.CellarsByID[cellarID]
+	if cellar == nil {
+		writeError(w, errors.New("cellar not found"))
+		return
+	}
+
+	beer := cellar.BeersByID[beerID]
+	if beer == nil {
+		writeError(w, errors.New("beer not found"))
+		return
+	}
+
+	tasting := beer.TastingsByID[tastingID]
+	if tasting == nil {
+		writeError(w, errors.New("tasting not found"))
+		return
+	}
+
+	tasting.Notes = notes
+	tasting.Rating = rating
+	tasting.Date = tastedDate
+
+	err = models.SaveAccount(c, account)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	
+	writeSuccess(w, simpleTasting{
+		ID : tasting.ID,
+		Rating : tasting.Rating,
+		Notes : tasting.Notes,
+		TastedDate : tasting.Date.ToString(),
+		AgeTastedDate : beer.GetTastingAge(tasting),
 		Quantity : beer.Quantity,
 		AverageRating : beer.GetAverageRating(),
 	})
