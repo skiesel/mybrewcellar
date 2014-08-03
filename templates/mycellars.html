@@ -22,37 +22,39 @@
 		</div>
 	</div>
 
-	<div class="row">
-		<div class="col-lg-6">
-			<h2>Existing cellars</h2>
-			<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
-
-			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
-			  
-			  <label
-			  	ng-repeat="sort in sorts"
-			  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
-			  	ng-click="resort(sort)"
-			  	>
-			    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
-			    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
-			  </label>
-			  
-			</div>
-		</div>
-	</div>
-
-	<div id="cellars">
+	<div ng-show="cellars.length > 0">
 		<div class="row">
 			<div class="col-lg-6">
-				<div class="list-group">
-					<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
-						<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>
-						<span class="remove-icon badge" style="display:none;" ng-click="deleteCellar(cellar); $event.stopPropagation();">
-							<span class="glyphicon glyphicon-trash"></span>
-						</span>
-						<span class="badge">{{"{{"}}cellar.BeerCount{{"}}"}}</span>
-					</a>
+				<h2>Existing cellars</h2>
+				<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+
+				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+				  
+				  <label
+				  	ng-repeat="sort in sorts"
+				  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+				  	ng-click="resort(sort)"
+				  	>
+				    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+				    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+				  </label>
+				  
+				</div>
+			</div>
+		</div>
+
+		<div id="cellars">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="list-group">
+						<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
+							<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>
+							<span class="remove-icon badge" style="display:none;" ng-click="deleteCellar(cellar); $event.stopPropagation();">
+								<span class="glyphicon glyphicon-trash"></span>
+							</span>
+							<span class="badge">{{"{{"}}cellar.BeerCount{{"}}"}}</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>

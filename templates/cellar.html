@@ -74,50 +74,51 @@
 			</div>
 		</div>
 	</div>
-
-	<div class="row">
-		<div class="col-lg-6">
-			<h2>Existing beers</h2>
-			<a id="edit-toggle" ng-click="toggleEditBeers()">(edit)</a>
-			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
-			  <label
-			  	ng-repeat="sort in sorts"
-			  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
-			  	ng-click="resort(sort)"
-			  	>
-			    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
-			    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
-			  </label>
+	<div ng-show="beers.length > 0">
+		<div class="row">
+			<div class="col-lg-6">
+				<h2>Existing beers</h2>
+				<a id="edit-toggle" ng-click="toggleEditBeers()">(edit)</a>
+				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+				  <label
+				  	ng-repeat="sort in sorts"
+				  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+				  	ng-click="resort(sort)"
+				  	>
+				    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+				    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+				  </label>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
-		<div class="col-lg-6">
-			<div id="beer-rows" class="list-group">
-			  
-			  <a class="list-group-item beer-row" ng-click="gotoBeer(beer)" ng-repeat="beer in beers">
-			    
-			    <h3 class="beer-name list-group-item-heading">{{"{{"}}beer.Name{{"}}"}}</h3>
-			    
-			    <div class="row">
-			    	<div class="col-lg-6">
-			    		<p class="list-group-item-text">Average Rating: {{"{{"}}beer.AverageRating{{"}}"}}</p>
-					    <p class="list-group-item-text">Quantity: {{"{{"}}beer.Quantity{{"}}"}}</p>
-			  		</div>
-			    	<div class="col-lg-6">
-			    		<span class="editable badge pull-right" style="display:none;" ng-click="deleteBeer(beer); $event.stopPropagation();">
-			    			<span class="glyphicon glyphicon-trash"></span>
-			    		</span>
-			    		<span class="editable badge pull-right" style="display:none; margin-right:5px;" ng-click="transferBeer(beer); $event.stopPropagation();">
-			    			<span class="glyphicon glyphicon-transfer"></span>
-			    		</span>
-			    		<p class="list-group-item-text">Brewed: {{"{{"}}beer.Brewed{{"}}"}}</p>
-					    <p class="list-group-item-text">Added: {{"{{"}}beer.Added{{"}}"}}</p>
-					    <p class="list-group-item-text">Age: {{"{{"}}beer.Age{{"}}"}}</p>
-			  		</div>
-			    </div>
-			  </a>
+		<div class="row">
+			<div class="col-lg-6">
+				<div id="beer-rows" class="list-group">
+				  
+				  <a class="list-group-item beer-row" ng-click="gotoBeer(beer)" ng-repeat="beer in beers">
+				    
+				    <h3 class="beer-name list-group-item-heading">{{"{{"}}beer.Name{{"}}"}}</h3>
+				    
+				    <div class="row">
+				    	<div class="col-lg-6">
+				    		<p class="list-group-item-text">Average Rating: {{"{{"}}beer.AverageRating{{"}}"}}</p>
+						    <p class="list-group-item-text">Quantity: {{"{{"}}beer.Quantity{{"}}"}}</p>
+				  		</div>
+				    	<div class="col-lg-6">
+				    		<span class="editable badge pull-right" style="display:none;" ng-click="deleteBeer(beer); $event.stopPropagation();">
+				    			<span class="glyphicon glyphicon-trash"></span>
+				    		</span>
+				    		<span class="editable badge pull-right" style="display:none; margin-right:5px;" ng-click="transferBeer(beer); $event.stopPropagation();">
+				    			<span class="glyphicon glyphicon-transfer"></span>
+				    		</span>
+				    		<p class="list-group-item-text">Brewed: {{"{{"}}beer.Brewed{{"}}"}}</p>
+						    <p class="list-group-item-text">Added: {{"{{"}}beer.Added{{"}}"}}</p>
+						    <p class="list-group-item-text">Age: {{"{{"}}beer.Age{{"}}"}}</p>
+				  		</div>
+				    </div>
+				  </a>
+				</div>
 			</div>
 		</div>
 	</div>

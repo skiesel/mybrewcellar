@@ -6,7 +6,6 @@
 
 	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
-
 	<div class="row" ng-show="!beerEditingEnabled">
 		<div class="col-lg-3">
 			<h1>{{"{{"}}thisBeer.Name{{"}}"}}</h1>
@@ -85,44 +84,46 @@
 	</div>
 
 
-	<div class="row">
-		<div class="col-lg-6">
-			<h2>Existing tasting notes</h2>
-			<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
-			<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
-			  <label
-			  	ng-repeat="sort in sorts"
-			  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
-			  	ng-click="resort(sort)"
-			  	>
-			    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
-			    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
-			  </label>
+	<div ng-show="tastings.length > 0">
+		<div class="row">
+			<div class="col-lg-6">
+				<h2>Existing tasting notes</h2>
+				<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+				  <label
+				  	ng-repeat="sort in sorts"
+				  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+				  	ng-click="resort(sort)"
+				  	>
+				    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+				    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+				  </label>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-lg-6">
+
+				<a class="list-group-item tasting-row" ng-click="gotoTasting(tasting)" ng-repeat="tasting in tastings">
+					<div class="row">
+						<div class="col-lg-3">
+				    	<p class="list-group-item-text">{{"{{"}}tasting.TastedDate{{"}}"}}</p>
+				    	<p class="list-group-item-text">({{"{{"}}tasting.AgeTastedDate{{"}}"}})</p>
+				    </div>
+						<div class="col-lg-3">
+				    	<p class="list-group-item-text">{{"{{"}}tasting.Rating{{"}}"}}</p>
+				    </div>
+						<div class="col-lg-6">
+							<span class="remove-icon badge pull-right" style="display:none;" ng-click="deleteTasting(tasting)"><span class="glyphicon glyphicon-trash"></span></span>
+				    	<p class="list-group-item-text tasting-notes-text">{{"{{"}}tasting.Notes{{"}}"}}</p>
+				    </div>
+					</div>
+				</a>
+
 			</div>
 		</div>
 	</div>
-
-	<div class="row">
-		<div class="col-lg-6">
-
-			  	<a class="list-group-item tasting-row" ng-click="gotoTasting(tasting)" ng-repeat="tasting in tastings">
-			  		<div class="row">
-			    		<div class="col-lg-3">
-					    	<p class="list-group-item-text">{{"{{"}}tasting.TastedDate{{"}}"}}</p>
-					    	<p class="list-group-item-text">({{"{{"}}tasting.AgeTastedDate{{"}}"}})</p>
-					    </div>
-			    		<div class="col-lg-3">
-					    	<p class="list-group-item-text">{{"{{"}}tasting.Rating{{"}}"}}</p>
-					    </div>
-							<div class="col-lg-6">
-								<span class="remove-icon badge pull-right" style="display:none;" ng-click="deleteTasting(tasting)"><span class="glyphicon glyphicon-trash"></span></span>
-					    	<p class="list-group-item-text tasting-notes-text">{{"{{"}}tasting.Notes{{"}}"}}</p>
-					    </div>
-						</div>
-			  	</a>
-
-			</div>
-		</div>
 
 	<a href="#delete-warning" id="delete-warning-link"></a>
 	<div id="delete-warning" style="display:none;" class="text-center">
