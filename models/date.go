@@ -40,8 +40,3 @@ func (date *Date) ToString() string {
 	const layout = "Jan 2, 2006"
 	return date.Date.Format(layout)
 }
-
-func (date *Date) ToDSString() string {
-	const layout = "2006-01-02"
-	return date.Date.Format(layout)
-}

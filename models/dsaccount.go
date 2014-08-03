@@ -240,8 +240,8 @@ func (beer *Beer) toBeerDS() *BeerDS {
 		ID:            beer.ID,
 		Name:          beer.Name,
 		Notes:         beer.Notes,
-		Brewed:        beer.Brewed.ToDSString(),
-		Added:         beer.Added.ToDSString(),
+		Brewed:        beer.Brewed.ToString(),
+		Added:         beer.Added.ToString(),
 		Quantity:      beer.Quantity,
 		NextTastingID: beer.NextTastingID,
 	}
@@ -252,7 +252,7 @@ func (tasting *Tasting) toTastingDS() *TastingDS {
 		ID:     tasting.ID,
 		Rating: tasting.Rating,
 		Notes:  tasting.Notes,
-		Date:   tasting.Date.ToDSString(),
+		Date:   tasting.Date.ToString(),
 	}
 }
 

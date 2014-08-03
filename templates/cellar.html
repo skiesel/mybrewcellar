@@ -16,7 +16,7 @@
 		</div>
 		<div class="col-lg-2">
 			<button class="btn btn-default" ng-click="updateCellarName()">update</button>
-			<a ng-click="toggleCellarNameEditing()">cancel</a>
+			<a ng-click="toggleCellarNameEditing(true)">cancel</a>
 		</div>
 	</div>
 
@@ -268,7 +268,11 @@ app.controller("CellarController", function($scope, $filter){
 		window.location = "/beer?cellar=" + $scope.thisCellar.ID + "&id=" + beer.ID;
 	};
 
-	$scope.toggleCellarNameEditing = function() {
+	$scope.toggleCellarNameEditing = function(reset) {
+		if(reset === true) {
+			$scope.thisCellar = $scope.savedCellar;
+		}
+		$scope.savedCellar = jQuery.extend(true, {}, $scope.thisCellar);
 		$scope.cellarEditingEnabled = !$scope.cellarEditingEnabled;
 	}
 

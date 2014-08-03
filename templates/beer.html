@@ -31,7 +31,7 @@
 			<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Added">
 			<textarea class="form-control" ng-model="thisBeer.Notes"></textarea>
 			<button class="btn btn-default" ng-click="updateBeer()">update</button>
-			<a ng-click="toggleBeerEditing()">cancel</a>
+			<a ng-click="toggleBeerEditing(true)">cancel</a>
 		</div>
 	</div>
 
@@ -244,7 +244,12 @@ app.controller("MyBeerController", function($scope, $filter){
 		window.location = "/tasting?cellar=" + $scope.cellarID + "&beer=" + $scope.thisBeer.ID + "&id=" + tasting.ID;
 	};
 
-	$scope.toggleBeerEditing = function() {
+	$scope.toggleBeerEditing = function(reset) {
+		if(reset === true) {
+			$scope.thisBeer = $scope.savedBeer;
+		}
+		$("#quantity-slider").slider('value', $scope.thisBeer.Quantity);
+		$scope.savedBeer = jQuery.extend(true, {}, $scope.thisBeer);
 		$scope.beerEditingEnabled = !$scope.beerEditingEnabled;
 	}
 
