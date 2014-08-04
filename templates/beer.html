@@ -10,6 +10,7 @@
 		<div class="col-lg-3">
 			<h1>{{"{{"}}thisBeer.Name{{"}}"}}</h1>
 			<a ng-click="toggleBeerEditing()">(edit)</a>
+			<a ng-click="openQR()">(generate qr-code)</a>
 			<p>Average Rating: {{"{{"}}thisBeer.AverageRating{{"}}"}}</p>
 			<p>Quantity: {{"{{"}}thisBeer.Quantity{{"}}"}}</p>
 			<p>Brewed: {{"{{"}}thisBeer.Brewed{{"}}"}}</p>
@@ -134,6 +135,11 @@
 			<button class="btn btn-default" ng-click="confirmDeleteTasting()">yes</button>
 			<button class="btn btn-default" ng-click="cancelFancybox()">no</button>
 		</p>
+	</div>
+
+	<a href="#qr-display" id="qr-display-link"></a>
+	<div id="qr-display" style="display:none;">
+		<canvas id="QRCanvas" width="350" height="350"></canvas>
 	</div>
 
 </div>
@@ -383,6 +389,25 @@ app.controller("MyBeerController", function($scope, $filter){
 			}
 		);
 	}
+
+	$scope.openQR = function() {
+		$.post(
+			"/api/get-qr-code",
+			{ url : document.URL},
+			function(data) {
+				var obj = $.parseJSON(data);
+				var canvas = document.getElementById("QRCanvas");
+				var ctx = canvas.getContext("2d");
+				var image = new Image();
+				image.src = "data:image/  png;base64,"+obj.Data.PNGData;
+				image.onload = function() {
+	    		ctx.drawImage(image, 0, 0);
+	    		$("#qr-display-link").click();
+
+				};
+		});
+	}
+	$("#qr-display-link").fancybox();
 
 });
 

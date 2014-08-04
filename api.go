@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/mjibson/appstats"
+	"code.google.com/p/rsc/qr"
 )
 
 type responseJson struct {
@@ -33,6 +34,8 @@ func init() {
 	http.Handle("/api/new-tasting", appstats.NewHandler(handleNewTastingRequest))
 	http.Handle("/api/delete-tasting", appstats.NewHandler(handleDeleteTastingRequest))
 	http.Handle("/api/update-tasting", appstats.NewHandler(handleUpdateTastingRequest))
+
+	http.Handle("/api/get-qr-code", appstats.NewHandler(handleQRCodeRequest))
 }
 
 func getAccount(c appengine.Context) *models.Account {
@@ -739,5 +742,34 @@ func handleUpdateTastingRequest(c appengine.Context, w http.ResponseWriter, r *h
 		AgeTastedDate : beer.GetTastingAge(tasting),
 		Quantity : beer.Quantity,
 		AverageRating : beer.GetAverageRating(),
+	})
+}
+
+type simpleQRResponse struct {
+	PNGData []byte
+}
+
+func handleQRCodeRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
+	url := r.PostFormValue("url")
+	if url == "" {
+		writeError(w, errors.New("no url supplied"))
+		return
+	}
+
+	account := getAccount(c)
+	if account == nil {
+		writeError(w, errors.New("no account"))
+		return
+	}
+
+	QR, err := qr.Encode(url, qr.H)
+
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	writeSuccess(w, simpleQRResponse {
+		PNGData : QR.PNG(),
 	})
 }
