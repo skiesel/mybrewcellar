@@ -139,7 +139,7 @@
 
 	<a href="#qr-display" id="qr-display-link"></a>
 	<div id="qr-display" style="display:none;">
-		<canvas id="QRCanvas" width="350" height="350"></canvas>
+		<canvas id="QRCanvas" width="300" height="300"></canvas>
 	</div>
 
 </div>
@@ -401,7 +401,7 @@ app.controller("MyBeerController", function($scope, $filter){
 				var image = new Image();
 				image.src = "data:image/  png;base64,"+obj.Data.PNGData;
 				image.onload = function() {
-	    		ctx.drawImage(image, 0, 0);
+	    		ctx.drawImage(image, 0, 0, 300, 300);
 	    		$("#qr-display-link").click();
 
 				};
