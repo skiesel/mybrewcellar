@@ -1,0 +1,107 @@
+{{template "top.html" .}}
+
+<div class="container" ng-controller="MyTastingController">
+
+	<a href="/beer?cellar={{ .Cellar.ID }}&id={{ .Beer.ID }}">back</a>
+
+	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
+	<div class="row" ng-show="!tastingEditingEnabled">
+		<div class="col-lg-6">
+			<a ng-click="toggleTastingEditing()">(edit)</a>
+		</div>
+	</div>
+	<div class="row" ng-show="!tastingEditingEnabled">
+		
+		<div class="col-lg-3">
+	  	<p class="list-group-item-text">{{"{{"}}thisTasting.TastedDate{{"}}"}}</p>
+	  	<p class="list-group-item-text">{{"{{"}}thisTasting.AgeTastedDate{{"}}"}}</p>
+	  </div>
+		<div class="col-lg-3">
+	  	<p class="list-group-item-text">{{"{{"}}thisTasting.Rating{{"}}"}}</p>
+	  	<p class="list-group-item-text tasting-notes-text">{{"{{"}}thisTasting.Notes{{"}}"}}</p>
+	  </div>
+	</div>
+
+	<div class="row" ng-show="tastingEditingEnabled">
+		<div class="col-lg-6">
+			<input class="form-control datepicker" type="text" readonly ng-model="thisTasting.TastedDate">
+			<input class="form-control" type="text" readonly ng-model="thisTasting.Rating" />
+			<div id="rating-slider"></div>
+			<textarea class="form-control" ng-model="thisTasting.Notes"></textarea>
+			<button class="btn btn-default" ng-click="updateTasting()">update</button>
+			<a ng-click="toggleTastingEditing(true)">cancel</a>
+		</div>
+	</div>
+
+</div>
+
+<script>
+
+app.controller("MyTastingController", function($scope){
+	$scope.cellarID = {{ .Cellar.ID }};
+	$scope.beerID = {{ .Beer.ID }};
+	$scope.tastingEditingEnabled = false;
+	$scope.thisTasting = {
+		{{ with .Tasting }}
+			ID : {{ .ID }},
+			Rating : {{ .Rating }},
+			Notes : "{{ .Notes }}",
+			TastedDate : "{{ .Date.ToString }}",
+			AgeTastedDate : "",
+		{{ end }}
+	};
+
+	$scope.init = function() {
+		$("#rating-slider").slider({
+			min: 0,
+			max: 10,
+			slide: function( event, ui ) {
+				$scope.thisTasting.Rating = ui.value;
+				$scope.$apply();
+			}
+		});
+
+	  $(".datepicker").datepicker({
+	  	"dateFormat": "M dd, yy"
+	  });
+	};
+	$scope.init();
+
+	$scope.toggleTastingEditing = function(reset) {
+		if(reset === true) {
+			$scope.thisTasting = $scope.savedTasting;
+		}
+		$("#rating-slider").slider('value', $scope.thisTasting.Rating);
+		$scope.savedTasting = jQuery.extend(true, {}, $scope.thisTasting);
+		$scope.tastingEditingEnabled = !$scope.tastingEditingEnabled;
+	}
+
+	$scope.updateTasting = function() {
+		$.post(
+			"api/update-tasting",
+			{ 
+				cellarID : $scope.cellarID,
+				beerID : $scope.beerID,
+				tastingID : $scope.thisTasting.ID,
+				rating : $scope.thisTasting.Rating,
+				notes : $scope.thisTasting.Notes,
+				tastedDate: $scope.thisTasting.TastedDate,
+			},
+			function(data) {
+				var obj = $.parseJSON(data);
+				if(obj.Status == "SUCCESS") {
+					$scope.toggleTastingEditing();
+					$scope.$apply();
+					showError("Tasting successfully updated", SUCCESS);
+				}
+				else {
+					showError("Failed to update tasting : (" + obj.Error + ")");
+				}
+			}
+		);
+	}
+});
+
+</script>
+
+{{template "bottom.html" .}}

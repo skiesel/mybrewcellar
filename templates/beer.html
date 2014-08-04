@@ -394,7 +394,7 @@ app.controller("MyBeerController", function($scope, $filter){
 	$scope.openQR = function() {
 		$.post(
 			"/api/get-qr-code",
-			{ url : document.URL},
+			{ url : "http://mybrewcellar.appspot.com/universal-beer?id="+$scope.thisBeer.UBID},
 			function(data) {
 				var obj = $.parseJSON(data);
 				var canvas = document.getElementById("QRCanvas");
