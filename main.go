@@ -3,9 +3,9 @@ package pages
 import (
 	"models"
 	//"github.com/skiesel/mybrewcellar/models"
-	"net/http"
-	"github.com/mjibson/appstats"
 	"appengine"
+	"github.com/mjibson/appstats"
+	"net/http"
 )
 
 func init() {

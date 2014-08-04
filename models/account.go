@@ -13,6 +13,32 @@ type Account struct {
 	CellarsByID  map[int]*Cellar
 }
 
+type AccountDS struct {
+	UserID       string
+	UserEmail    string
+	NextCellarID int
+}
+
+func (account Account) toAccountDS() *AccountDS {
+	return &AccountDS{
+		UserID:       account.User.UserID,
+		UserEmail:    account.User.Email,
+		NextCellarID: account.NextCellarID,
+	}
+}
+
+func (accountDS *AccountDS) toAccount() *Account {
+	return &Account{
+		User: &User{
+			UserID: accountDS.UserID,
+			Email:  accountDS.UserEmail,
+		},
+		NextCellarID: accountDS.NextCellarID,
+		Cellars:      map[string]*Cellar{},
+		CellarsByID:  map[int]*Cellar{},
+	}
+}
+
 func (account Account) GetUsername() string {
 	return account.User.UserID
 }

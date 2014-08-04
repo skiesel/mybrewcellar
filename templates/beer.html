@@ -155,6 +155,7 @@ app.controller("MyBeerController", function($scope, $filter){
 
 	{{ with .Beer }}
 	$scope.thisBeer = {
+		UBID : {{ .UBID }},
 		ID : {{ .ID }},
 		Name : "{{ .Name }}",
 		AverageRating : {{ .GetAverageRating }},

@@ -6,35 +6,6 @@ import (
 	"appengine/memcache"
 )
 
-type AccountDS struct {
-	UserID       string
-	UserEmail    string
-	NextCellarID int
-}
-
-type CellarDS struct {
-	ID         int
-	NextBeerID int
-	Name       string
-}
-
-type BeerDS struct {
-	ID            int
-	Name          string
-	Notes         string
-	Brewed        string
-	Added         string
-	Quantity      int
-	NextTastingID int
-}
-
-type TastingDS struct {
-	ID     int
-	Rating int
-	Notes  string
-	Date   string
-}
-
 func SaveAccount(c appengine.Context, account *Account) error {
 
 	cacheItem := &memcache.Item{
@@ -86,7 +57,7 @@ func SaveAccount(c appengine.Context, account *Account) error {
 
 		for cellarID, datastoreKey := range oldCellarKeys {
 			if account.CellarsByID[cellarID] == nil {
-				datastore.Delete(c, datastoreKey);
+				datastore.Delete(c, datastoreKey)
 			}
 		}
 
@@ -141,10 +112,9 @@ func SaveAccount(c appengine.Context, account *Account) error {
 
 			for beerID, datastoreKey := range oldBeerKeys {
 				if cellar.BeersByID[beerID] == nil {
-					datastore.Delete(c, datastoreKey);
+					datastore.Delete(c, datastoreKey)
 				}
 			}
-
 
 			for _, beer := range cellar.Beers {
 				existingKey, exists := oldBeerKeys[beer.ID]
@@ -190,7 +160,7 @@ func SaveAccount(c appengine.Context, account *Account) error {
 
 				for tastingID, datastoreKey := range oldTastingKeys {
 					if beer.TastingsByID[tastingID] == nil {
-						datastore.Delete(c, datastoreKey);
+						datastore.Delete(c, datastoreKey)
 					}
 				}
 
@@ -217,43 +187,6 @@ func SaveAccount(c appengine.Context, account *Account) error {
 	}, nil)
 
 	return err
-}
-
-func (account Account) toAccountDS() *AccountDS {
-	return &AccountDS{
-		UserID:       account.User.UserID,
-		UserEmail:    account.User.Email,
-		NextCellarID: account.NextCellarID,
-	}
-}
-
-func (cellar Cellar) toCellarDS() *CellarDS {
-	return &CellarDS{
-		ID:         cellar.ID,
-		NextBeerID: cellar.NextBeerID,
-		Name:       cellar.Name,
-	}
-}
-
-func (beer *Beer) toBeerDS() *BeerDS {
-	return &BeerDS{
-		ID:            beer.ID,
-		Name:          beer.Name,
-		Notes:         beer.Notes,
-		Brewed:        beer.Brewed.ToString(),
-		Added:         beer.Added.ToString(),
-		Quantity:      beer.Quantity,
-		NextTastingID: beer.NextTastingID,
-	}
-}
-
-func (tasting *Tasting) toTastingDS() *TastingDS {
-	return &TastingDS{
-		ID:     tasting.ID,
-		Rating: tasting.Rating,
-		Notes:  tasting.Notes,
-		Date:   tasting.Date.ToString(),
-	}
 }
 
 func GetAccount(c appengine.Context, email string) *Account {
@@ -347,50 +280,6 @@ func GetAccount(c appengine.Context, email string) *Account {
 	}
 
 	return account
-}
-
-func (accountDS *AccountDS) toAccount() *Account {
-	return &Account{
-		User: &User{
-			UserID: accountDS.UserID,
-			Email:  accountDS.UserEmail,
-		},
-		NextCellarID: accountDS.NextCellarID,
-		Cellars:      map[string]*Cellar{},
-		CellarsByID:  map[int]*Cellar{},
-	}
-}
-
-func (cellarDS *CellarDS) toCellar() *Cellar {
-	return &Cellar{
-		ID:         cellarDS.ID,
-		NextBeerID: cellarDS.NextBeerID,
-		Name:       cellarDS.Name,
-		Beers:      map[string]*Beer{},
-		BeersByID:  map[int]*Beer{},
-	}
-}
-
-func (beerDS *BeerDS) toBeer() *Beer {
-	return &Beer{
-		ID:            beerDS.ID,
-		Name:          beerDS.Name,
-		Notes:         beerDS.Notes,
-		Brewed:        ParseDate(beerDS.Brewed),
-		Added:         ParseDate(beerDS.Added),
-		Quantity:      beerDS.Quantity,
-		NextTastingID: beerDS.NextTastingID,
-		TastingsByID:  map[int]*Tasting{},
-	}
-}
-
-func (tastingDS *TastingDS) toTasting() *Tasting {
-	return &Tasting{
-		ID:     tastingDS.ID,
-		Rating: tastingDS.Rating,
-		Notes:  tastingDS.Notes,
-		Date:   ParseDate(tastingDS.Date),
-	}
 }
 
 func DeleteAccount(c appengine.Context, account *Account) error {

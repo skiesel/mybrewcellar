@@ -5,12 +5,12 @@ import (
 	//"github.com/skiesel/mybrewcellar/models"
 	"appengine"
 	"appengine/user"
+	"code.google.com/p/rsc/qr"
 	"encoding/json"
 	"errors"
+	"github.com/mjibson/appstats"
 	"net/http"
 	"strconv"
-	"github.com/mjibson/appstats"
-	"code.google.com/p/rsc/qr"
 )
 
 type responseJson struct {
@@ -107,8 +107,8 @@ func handleUpdateAccount(c appengine.Context, w http.ResponseWriter, r *http.Req
 }
 
 type simpleCellar struct {
-	ID   int
-	Name string
+	ID        int
+	Name      string
 	BeerCount int
 }
 
@@ -136,7 +136,7 @@ func handleNewCellarRequest(c appengine.Context, w http.ResponseWriter, r *http.
 		}
 
 		cellar := account.Cellars[newCellar]
-		writeSuccess(w, simpleCellar{ID: cellar.ID, Name: cellar.Name, BeerCount : 0})
+		writeSuccess(w, simpleCellar{ID: cellar.ID, Name: cellar.Name, BeerCount: 0})
 		return
 	}
 
@@ -210,18 +210,18 @@ func handleDeleteCellarRequest(c appengine.Context, w http.ResponseWriter, r *ht
 }
 
 type simpleBeer struct {
-	ID       int
-	Name     string
+	ID            int
+	Name          string
 	AverageRating int
-	Quantity int
-	Notes    string
-	Brewed   string
-	Added    string
-	Age      string
+	Quantity      int
+	Notes         string
+	Brewed        string
+	Added         string
+	Age           string
 }
 
 func handleNewBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Request) {
-	
+
 	cellarID, err := strconv.Atoi(r.PostFormValue("cellarID"))
 	if err != nil {
 		writeError(w, err)
@@ -270,7 +270,14 @@ func handleNewBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	ubid, err := models.GetAndIncrementUniversalBeerID(c)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
 	beer := &models.Beer{
+		UBID:					 ubid,
 		ID:            cellar.NextBeerID,
 		Name:          name,
 		Notes:         notes,
@@ -293,14 +300,14 @@ func handleNewBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	writeSuccess(w, simpleBeer{
-		ID:       beer.ID,
-		Name:     beer.Name,
+		ID:            beer.ID,
+		Name:          beer.Name,
 		AverageRating: 0,
-		Quantity: quantity,
-		Notes:    beer.Notes,
-		Brewed:   beer.Brewed.ToString(),
-		Added:    beer.Added.ToString(),
-		Age:      beer.GetAgeString(),
+		Quantity:      quantity,
+		Notes:         beer.Notes,
+		Brewed:        beer.Brewed.ToString(),
+		Added:         beer.Added.ToString(),
+		Age:           beer.GetAgeString(),
 	})
 }
 
@@ -459,13 +466,13 @@ func handleUpdateBeerRequest(c appengine.Context, w http.ResponseWriter, r *http
 		writeError(w, errors.New("Could not update beer, cellar not found"))
 		return
 	}
-	
+
 	beer := cellar.BeersByID[beerID]
 	if beer == nil {
 		writeError(w, errors.New("Could not update beer, beer not found"))
 		return
 	}
-	
+
 	name := r.PostFormValue("name")
 	notes := r.PostFormValue("notes")
 
@@ -495,31 +502,30 @@ func handleUpdateBeerRequest(c appengine.Context, w http.ResponseWriter, r *http
 
 	cellar.Beers[beer.Name] = beer
 
-
 	err = models.SaveAccount(c, account)
 	if err != nil {
 		writeError(w, err)
 		return
 	}
 	writeSuccess(w, simpleBeer{
-		ID:       beer.ID,
-		Name:     beer.Name,
+		ID:            beer.ID,
+		Name:          beer.Name,
 		AverageRating: 0,
-		Quantity: quantity,
-		Notes:    beer.Notes,
-		Brewed:   beer.Brewed.ToString(),
-		Added:    beer.Added.ToString(),
-		Age:      beer.GetAgeString(),
+		Quantity:      quantity,
+		Notes:         beer.Notes,
+		Brewed:        beer.Brewed.ToString(),
+		Added:         beer.Added.ToString(),
+		Age:           beer.GetAgeString(),
 	})
 }
 
 type simpleTasting struct {
-	ID int
-	Rating int
-	Notes string
-	TastedDate string
+	ID            int
+	Rating        int
+	Notes         string
+	TastedDate    string
 	AgeTastedDate string
-	Quantity int
+	Quantity      int
 	AverageRating float64
 }
 
@@ -570,15 +576,15 @@ func handleNewTastingRequest(c appengine.Context, w http.ResponseWriter, r *http
 	if beer == nil {
 		writeError(w, errors.New("beer not found"))
 		return
-	}	
-
-	tasting := &models.Tasting {
-		ID : beer.NextTastingID,
-		Rating : rating,
-		Notes : notes,
-		Date : tastedDate,
 	}
-	
+
+	tasting := &models.Tasting{
+		ID:     beer.NextTastingID,
+		Rating: rating,
+		Notes:  notes,
+		Date:   tastedDate,
+	}
+
 	if decrement {
 		beer.Quantity--
 		if beer.Quantity < 0 {
@@ -594,15 +600,15 @@ func handleNewTastingRequest(c appengine.Context, w http.ResponseWriter, r *http
 		writeError(w, err)
 		return
 	}
-	
+
 	writeSuccess(w, simpleTasting{
-		ID : tasting.ID,
-		Rating : tasting.Rating,
-		Notes : tasting.Notes,
-		TastedDate : tasting.Date.ToString(),
-		AgeTastedDate : beer.GetTastingAge(tasting),
-		Quantity : beer.Quantity,
-		AverageRating : beer.GetAverageRating(),
+		ID:            tasting.ID,
+		Rating:        tasting.Rating,
+		Notes:         tasting.Notes,
+		TastedDate:    tasting.Date.ToString(),
+		AgeTastedDate: beer.GetTastingAge(tasting),
+		Quantity:      beer.Quantity,
+		AverageRating: beer.GetAverageRating(),
 	})
 }
 
@@ -656,11 +662,11 @@ func handleDeleteTastingRequest(c appengine.Context, w http.ResponseWriter, r *h
 	if err != nil {
 		writeError(w, err)
 		return
-	}	
+	}
 
-	writeSuccess(w, simpleTasting{ ID : tasting.ID,
-		Quantity : beer.Quantity,
-		AverageRating : beer.GetAverageRating(),
+	writeSuccess(w, simpleTasting{ID: tasting.ID,
+		Quantity:      beer.Quantity,
+		AverageRating: beer.GetAverageRating(),
 	})
 }
 
@@ -733,15 +739,15 @@ func handleUpdateTastingRequest(c appengine.Context, w http.ResponseWriter, r *h
 		writeError(w, err)
 		return
 	}
-	
+
 	writeSuccess(w, simpleTasting{
-		ID : tasting.ID,
-		Rating : tasting.Rating,
-		Notes : tasting.Notes,
-		TastedDate : tasting.Date.ToString(),
-		AgeTastedDate : beer.GetTastingAge(tasting),
-		Quantity : beer.Quantity,
-		AverageRating : beer.GetAverageRating(),
+		ID:            tasting.ID,
+		Rating:        tasting.Rating,
+		Notes:         tasting.Notes,
+		TastedDate:    tasting.Date.ToString(),
+		AgeTastedDate: beer.GetTastingAge(tasting),
+		Quantity:      beer.Quantity,
+		AverageRating: beer.GetAverageRating(),
 	})
 }
 
@@ -769,7 +775,7 @@ func handleQRCodeRequest(c appengine.Context, w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeSuccess(w, simpleQRResponse {
-		PNGData : QR.PNG(),
+	writeSuccess(w, simpleQRResponse{
+		PNGData: QR.PNG(),
 	})
 }
