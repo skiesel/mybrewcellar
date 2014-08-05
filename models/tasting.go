@@ -1,5 +1,11 @@
 package models
 
+import (
+	"bytes"
+	"strconv"
+	"encoding/csv"
+)
+
 type Tasting struct {
 	ID     int
 	Rating int
@@ -30,4 +36,12 @@ func (tastingDS *TastingDS) toTasting() *Tasting {
 		Notes:  tastingDS.Notes,
 		Date:   ParseDate(tastingDS.Date),
 	}
+}
+
+func (tasting *Tasting) ToCSV() string {
+	buf := new(bytes.Buffer)
+	csvWriter := csv.NewWriter(buf)
+	csvWriter.Write([]string{"TASTING", strconv.Itoa(tasting.Rating), tasting.Notes, tasting.Date.ToString()})
+	csvWriter.Flush()
+	return buf.String()
 }

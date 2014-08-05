@@ -2,6 +2,8 @@ package models
 
 import (
 	"strconv"
+	"encoding/csv"
+	"bytes"
 )
 
 type Cellar struct {
@@ -39,4 +41,12 @@ func (cellarDS *CellarDS) toCellar() *Cellar {
 func (cellar *Cellar) GetBeerByID(idStr string) *Beer {
 	id, _ := strconv.Atoi(idStr)
 	return cellar.BeersByID[id]
+}
+
+func (cellar *Cellar) ToCSV() string {
+	buf := new(bytes.Buffer)
+	csvWriter := csv.NewWriter(buf)
+	csvWriter.Write([]string{"CELLAR", cellar.Name})
+	csvWriter.Flush()
+	return buf.String()
 }

@@ -25,6 +25,9 @@ handlers:
 - url: /tasting
   script: _go_app
   login: required
+- url: /export
+  script: _go_app
+  login: required
 - url: /api/* 
   script: _go_app
   login: required

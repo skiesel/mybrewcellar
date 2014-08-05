@@ -25,6 +25,15 @@
 		</div>
 	</div>
 
+	<p><a ng-click="export()">(export)</a></p>
+	<p>
+		<form method="POST" action="/import" enctype="multipart/form-data">
+			<a ng-click="import()">(import)</a>
+			<input name="importfile" type="file"/>
+			<input name="resetAccount" type="checkbox" checked/>erase existing data
+		</form>
+	</p>
+
 </div>
 
 <script>
@@ -50,6 +59,15 @@ app.controller("AccountController", function($scope){
 			}
 		);
 	};
+
+	$scope.export = function() {
+		window.location = "/export";
+	}
+
+	$scope.import = function() {
+		$('form').submit();
+	}
+
 
 });
 </script>

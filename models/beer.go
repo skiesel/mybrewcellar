@@ -2,6 +2,8 @@ package models
 
 import (
 	"strconv"
+	"bytes"
+	"encoding/csv"
 )
 
 type Beer struct {
@@ -89,4 +91,13 @@ func (beer *Beer) GetAgeString() string {
 func (beer *Beer) GetTastingByID(idStr string) *Tasting {
 	id, _ := strconv.Atoi(idStr)
 	return beer.TastingsByID[id]
+}
+
+func (beer *Beer) ToCSV() string {
+	buf := new(bytes.Buffer)
+	csvWriter := csv.NewWriter(buf)
+	csvWriter.Write([]string{"BEER", strconv.Itoa(beer.UBID),
+		beer.Name, strconv.Itoa(beer.Quantity), beer.Notes, beer.Brewed.ToString(), beer.Added.ToString()})
+	csvWriter.Flush()
+	return buf.String()
 }
