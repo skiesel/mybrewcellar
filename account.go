@@ -102,6 +102,13 @@ func importaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 						w.Write([]byte(err.Error()))
 						return
 					}
+					if ubid < 0 {
+						ubid, err = models.GetAndIncrementUniversalBeerID(c)
+						if err != nil {
+							w.Write([]byte(err.Error()))
+							return
+						}
+					}
 					beerName := line[2]
 					quantity, err := strconv.Atoi(line[3])
 					if err != nil {
