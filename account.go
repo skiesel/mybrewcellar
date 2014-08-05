@@ -33,11 +33,11 @@ func exportaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 	}
 	account := models.GetAccount(c, usr.Email)
 	for _, cellar := range account.Cellars {
-		w.Write([]byte(cellar.ToCSV()))
+		w.Write([]byte(cellar.ToCSV()+"\n"))
 		for _, beer := range cellar.Beers {
-			w.Write([]byte(beer.ToCSV()))
+			w.Write([]byte(beer.ToCSV()+"\n"))
 			for _, tasting := range beer.TastingsByID {
-				w.Write([]byte(tasting.ToCSV()))
+				w.Write([]byte(tasting.ToCSV()+"\n"))
 			}
 		}
 	}
