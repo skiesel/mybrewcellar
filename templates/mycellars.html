@@ -11,7 +11,7 @@
 
 	<div class="form-horizontal">
 		<div class="row">
-			<div class="col-lg-6">
+			<div class="col-lg-12">
 		    <div class="input-group">
 		      <input type="text" class="form-control" ng-model="newCellarName"/>
 		      <span class="input-group-btn">
@@ -24,7 +24,7 @@
 
 	<div ng-show="cellars.length > 0">
 		<div class="row">
-			<div class="col-lg-6">
+			<div class="col-lg-12">
 				<h2>Existing cellars</h2>
 				<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
 
@@ -45,7 +45,7 @@
 
 		<div id="cellars">
 			<div class="row">
-				<div class="col-lg-6">
+				<div class="col-lg-12">
 					<div class="list-group">
 						<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
 							<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>

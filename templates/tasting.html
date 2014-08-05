@@ -2,34 +2,38 @@
 
 <div class="container" ng-controller="MyTastingController">
 
-	<a href="/beer?cellar={{ .Cellar.ID }}&id={{ .Beer.ID }}">back</a>
+	<div class="row">
+		<a href="/beer?cellar={{ .Cellar.ID }}&id={{ .Beer.ID }}">back</a>
+		<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
+	</div>
 
-	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 	<div class="row" ng-show="!tastingEditingEnabled">
-		<div class="col-lg-6">
-			<a ng-click="toggleTastingEditing()">(edit)</a>
-		</div>
+		<a ng-click="toggleTastingEditing()">(edit tasting)</a>
 	</div>
 	<div class="row" ng-show="!tastingEditingEnabled">
 		
-		<div class="col-lg-3">
-	  	<p class="list-group-item-text">{{"{{"}}thisTasting.TastedDate{{"}}"}}</p>
-	  	<p class="list-group-item-text">{{"{{"}}thisTasting.AgeTastedDate{{"}}"}}</p>
+		<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+	  	<p class="list-group-item-text">Date: {{"{{"}}thisTasting.TastedDate{{"}}"}}</p>
+	  	<p class="list-group-item-text">Age: {{"{{"}}thisTasting.AgeTastedDate{{"}}"}}</p>
 	  </div>
-		<div class="col-lg-3">
-	  	<p class="list-group-item-text">{{"{{"}}thisTasting.Rating{{"}}"}}</p>
+		<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+	  	<p class="list-group-item-text">Rating: {{"{{"}}thisTasting.Rating{{"}}"}}</p>
 	  	<p class="list-group-item-text tasting-notes-text">{{"{{"}}thisTasting.Notes{{"}}"}}</p>
 	  </div>
 	</div>
 
 	<div class="row" ng-show="tastingEditingEnabled">
-		<div class="col-lg-6">
-			<input class="form-control datepicker" type="text" readonly ng-model="thisTasting.TastedDate">
-			<input class="form-control" type="text" readonly ng-model="thisTasting.Rating" />
-			<div id="rating-slider"></div>
-			<textarea class="form-control" ng-model="thisTasting.Notes"></textarea>
-			<button class="btn btn-default" ng-click="updateTasting()">update</button>
-			<a ng-click="toggleTastingEditing(true)">cancel</a>
+		<div class="col-lg-12">
+			<div class="row">
+				<input class="form-control datepicker" type="text" readonly ng-model="thisTasting.TastedDate">
+				<input class="form-control" type="text" readonly ng-model="thisTasting.Rating" />
+				<div id="rating-slider"></div>
+				<textarea class="form-control" ng-model="thisTasting.Notes"></textarea>
+			</div>
+			<div class="row" style="text-align:center; padding-top:10px;">
+				<button class="btn btn-default" ng-click="updateTasting()">update</button>
+				<a ng-click="toggleTastingEditing(true)">cancel</a>
+			</div>
 		</div>
 	</div>
 
