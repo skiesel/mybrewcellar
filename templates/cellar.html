@@ -4,11 +4,11 @@
 
 	<a ng-click="goBack()">back</a>
 
-	<div ng-show="!{{.Editable}}">
+	<div ng-show="!{{.Editable}}" ng-cloak>
 		<h1>{{ .Account.GetUsername }}'s {{"{{"}}thisCellar.Name{{"}}"}}</h1>
 	</div>
 
-	<div class="row" ng-show="!cellarEditingEnabled && {{.Editable}}">
+	<div class="row" ng-show="!cellarEditingEnabled && {{.Editable}}" ng-cloak>
 		<div class="col-lg-12">
 			<h1>{{"{{"}}thisCellar.Name{{"}}"}}</h1>
 			<a ng-click="toggleCellarNameEditing()">(edit cellar)</a>
@@ -85,7 +85,7 @@
 			<div class="col-lg-12">
 				<h2>Existing beers</h2>
 				<a id="edit-toggle" ng-click="toggleEditBeers()" ng-show="{{.Editable}}">(edit)</a>
-				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;" ng-cloak>
 				  <label
 				  	ng-repeat="sort in sorts"
 				  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
@@ -100,7 +100,7 @@
 
 		<div class="row">
 			<div class="col-lg-12">
-				<div id="beer-rows" class="list-group">
+				<div id="beer-rows" class="list-group" ng-cloak>
 				  
 				  <a class="list-group-item beer-row" ng-click="gotoBeer(beer)" ng-repeat="beer in beers">
 				    

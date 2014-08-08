@@ -2,12 +2,12 @@
 
 <div class="container" ng-controller="MyCellarsController">
 
-	<div ng-show="{{.Editable}}">
+	<div ng-show="{{.Editable}}" ng-cloak>
 		<h1>Welcome {{ .Account.GetUsername }} to your cellars!</h1>
 		<h2>Add a new cellar</h2>
 	</div>
 
-	<div ng-show="!{{.Editable}}">
+	<div ng-show="!{{.Editable}}" ng-cloak>
 		<h1>{{ .Account.GetUsername }}'s cellars!</h1>
 	</div>
 
@@ -33,7 +33,7 @@
 				<h2>Existing cellars</h2>
 				<a id="edit-toggle" ng-click="toggleEdit()" ng-show="{{.Editable}}">(edit)</a>
 
-				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;"ng-cloak>
 				  
 				  <label
 				  	ng-repeat="sort in sorts"
@@ -51,7 +51,7 @@
 		<div id="cellars">
 			<div class="row">
 				<div class="col-lg-12">
-					<div class="list-group">
+					<div class="list-group" ng-cloak>
 						<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
 							<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>
 							<span class="remove-icon badge" ng-show="cellarEditingEnabled" ng-click="deleteCellar(cellar); $event.stopPropagation();">

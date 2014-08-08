@@ -48,7 +48,7 @@ func NewPage(r *http.Request) Page {
 			var accounts []AccountDS
       _, err := query.GetAll(c, &accounts)
       
-      if err != nil || len(accounts) <= 0 {
+      if err != nil || len(accounts) <= 0 || usr.Email == accounts[0].UserEmail {
       	newPage.Account = GetAccount(c, usr.Email)
     	} else {
     		newPage.Account = GetAccount(c, accounts[0].UserEmail)

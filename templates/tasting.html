@@ -10,7 +10,7 @@
 	<div class="row" ng-show="!tastingEditingEnabled">
 		<a ng-click="toggleTastingEditing()" ng-show="{{.Editable}}">(edit tasting)</a>
 	</div>
-	<div class="row" ng-show="!tastingEditingEnabled">
+	<div class="row" ng-show="!tastingEditingEnabled" ng-cloak>
 		
 		<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 	  	<p class="list-group-item-text">Date: {{"{{"}}thisTasting.TastedDate{{"}}"}}</p>
