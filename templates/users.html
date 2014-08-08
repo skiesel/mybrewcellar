@@ -1,0 +1,83 @@
+{{template "top.html" .}}
+
+<div class="container" ng-controller="AccountListingController">
+
+	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
+
+	<div class="row">
+		<h2>Existing Users</h2>
+		<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
+		  <label
+		  	ng-repeat="sort in sorts"
+		  	ng-attr-class="{{"{{"}}sort.Active && 'btn btn-default active' || 'btn btn-default' {{"}}"}}"
+		  	ng-click="resort(sort)"
+		  	>
+		    <input type="radio" name="sortRadios"/>{{"{{"}}sort.Label{{"}}"}}
+		    <span ng-attr-class="{{"{{"}}sort.Decreasing && 'glyphicon glyphicon-circle-arrow-down' || 'glyphicon glyphicon-circle-arrow-up' {{"}}"}}"></span>
+		  </label>
+		</div>
+	</div>
+
+	<div class="row">
+
+		<a class="list-group-item" ng-click="gotoUserCellar(user)" ng-repeat="user in users">
+			<div class="row">
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					{{"{{"}}user.Username{{"}}"}}
+				</div>
+			</div>
+		</a>
+
+	</div>
+
+</div>
+
+<script>
+
+app.controller("AccountListingController", function($scope, $filter){
+	$scope.users = [
+		{{ range .Accounts }}
+			{
+				Username: "{{ . }}",
+			},
+		{{ end }}
+	];
+
+	$scope.sorts = [
+		{
+			Label: "username",
+			Decreasing: true,
+			Active: true,
+			Sort: "Username",
+		},
+	];
+
+	$scope.activeSort = $scope.sorts[0];
+	$scope.users = $filter('orderBy')($scope.users, $scope.activeSort.Sort, $scope.activeSort.Decreasing);
+
+	$scope.resort = function(sort) {
+		if($scope.activeSort === sort) {
+			$scope.activeSort.Decreasing = !$scope.activeSort.Decreasing;
+		}
+		else {
+			$scope.activeSort.Active = false;
+			$scope.activeSort = sort;
+			$scope.activeSort.Active = true;
+		}
+
+		if($scope.activeSort.Reverse) {
+			$scope.tastings = $filter('orderBy')($scope.tastings, $scope.activeSort.Sort, !$scope.activeSort.Decreasing);
+		}
+		else {
+			$scope.tastings = $filter('orderBy')($scope.tastings, $scope.activeSort.Sort, $scope.activeSort.Decreasing);	
+		}
+	};
+
+	$scope.gotoUserCellar = function(user) {
+		window.location = "/mycellars?username=" + user.Username;
+	};
+
+});
+</script>
+
+{{template "bottom.html" .}}
