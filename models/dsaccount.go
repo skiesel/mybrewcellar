@@ -6,6 +6,38 @@ import (
 	"appengine/memcache"
 )
 
+func GetAllAccounts(c appengine.Context) ([]string, error) {
+
+	accounts := []string{}
+	_, err := memcache.Gob.Get(c, "AccountsArray", &accounts)
+	if err == nil {
+		return accounts, nil
+	}
+
+	var accountsDS []AccountDS
+	query := datastore.NewQuery("Account")
+	_, err = query.GetAll(c, &accountsDS)
+	if err != nil {
+		return []string{}, err
+	}
+
+	for _, account := range accountsDS {
+		accounts = append(accounts, account.UserID)
+	}
+
+	cacheItem := &memcache.Item{
+		Key:    "AccountsArray",
+		Object: accounts,
+	}
+
+	err = memcache.Gob.Set(c, cacheItem)
+	if err != nil {
+		c.Infof("Accounts array not cached (%v)", err)
+	}
+
+	return accounts, err
+}
+
 func SaveAccount(c appengine.Context, account *Account) error {
 
 	cacheItem := &memcache.Item{

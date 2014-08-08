@@ -2,15 +2,19 @@
 
 <div class="container" ng-controller="CellarController">
 
-	<a href="/mycellars">back</a>
+	<a ng-click="goBack()">back</a>
 
-	<div class="row" ng-show="!cellarEditingEnabled">
+	<div ng-show="!{{.Editable}}">
+		<h1>{{ .Account.GetUsername }}'s {{"{{"}}thisCellar.Name{{"}}"}}</h1>
+	</div>
+
+	<div class="row" ng-show="!cellarEditingEnabled && {{.Editable}}">
 		<div class="col-lg-12">
 			<h1>{{"{{"}}thisCellar.Name{{"}}"}}</h1>
 			<a ng-click="toggleCellarNameEditing()">(edit cellar)</a>
 		</div>
 	</div>
-	<div class="row" ng-show="cellarEditingEnabled">
+	<div class="row" ng-show="cellarEditingEnabled  && {{.Editable}}">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="row">
 				<input class="form-control" type="text" ng-model="thisCellar.Name" />
@@ -22,11 +26,11 @@
 		</div>
 	</div>
 
-	<h2>Add a new beer</h2>
+	<h2 ng-show="{{.Editable}}">Add a new beer</h2>
 
 	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
-	<div class="row">
+	<div class="row" ng-show="{{.Editable}}">
 
 		<div class="form-horizontal">
 
@@ -80,7 +84,7 @@
 		<div class="row">
 			<div class="col-lg-12">
 				<h2>Existing beers</h2>
-				<a id="edit-toggle" ng-click="toggleEditBeers()">(edit)</a>
+				<a id="edit-toggle" ng-click="toggleEditBeers()" ng-show="{{.Editable}}">(edit)</a>
 				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
 				  <label
 				  	ng-repeat="sort in sorts"
@@ -226,6 +230,7 @@ app.controller("CellarController", function($scope, $filter){
 	$scope.beers = $filter('orderBy')($scope.beers, $scope.activeSort.Sort, $scope.activeSort.Decreasing);
 
 	$scope.init = function() {
+
 		$("#delete-warning-link").fancybox();
 
 		$("#transfer-warning-link").fancybox({
@@ -265,12 +270,29 @@ app.controller("CellarController", function($scope, $filter){
 		}
 	};
 
-	$scope.setTransferToCellar = function(cellar) {
-		$scope.transferToCellar = cellar;
-	};
+	$scope.goBack = function() {
+		var username = getParameterByName("username");
+		if(username && username !== "") {
+			window.location = "/mycellars?username="+username;
+		}
+		else {
+			window.location = "/mycellars";
+		}
+	}
 
 	$scope.gotoBeer = function(beer) {
-		window.location = "/beer?cellar=" + $scope.thisCellar.ID + "&id=" + beer.ID;
+		var username = getParameterByName("username");
+		if(username && username !== "") {
+			window.location = "/beer?cellar=" + $scope.thisCellar.ID + "&id=" + beer.ID+"&username="+username;
+		}
+		else {
+			window.location = "/beer?cellar=" + $scope.thisCellar.ID + "&id=" + beer.ID;
+		}
+	};
+
+{{ if .Editable }}
+	$scope.setTransferToCellar = function(cellar) {
+		$scope.transferToCellar = cellar;
 	};
 
 	$scope.toggleCellarNameEditing = function(reset) {
@@ -421,7 +443,7 @@ app.controller("CellarController", function($scope, $filter){
 			}
 		);
 	};
-
+{{ end }}
 });
 </script>
 

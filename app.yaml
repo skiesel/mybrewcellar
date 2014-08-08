@@ -28,6 +28,9 @@ handlers:
 - url: /export
   script: _go_app
   login: required
+- url: /users
+  script: _go_app
+  login: required
 - url: /api/* 
   script: _go_app
   login: required

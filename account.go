@@ -4,11 +4,11 @@ import (
 	"models"
 	//"github.com/skiesel/mybrewcellar/models"
 	"appengine"
-	"github.com/mjibson/appstats"
-	"net/http"
 	"appengine/user"
 	"encoding/csv"
+	"github.com/mjibson/appstats"
 	"io"
+	"net/http"
 	"strconv"
 )
 
@@ -19,6 +19,8 @@ func init() {
 }
 
 func myaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) {
+	r.URL.Query().Set("username", "")
+
 	page := models.NewPage(r)
 	page.Title = "My Account"
 	pageTemplate := BuildTemplate(ACCOUNT)
@@ -72,22 +74,23 @@ func importaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 	var currentCellar *models.Cellar
 	var currentBeer *models.Beer
 
-	for ; err == nil ; {
+	for err == nil {
 		line, err2 := csvReader.Read()
 		err = err2
 		if len(line) > 0 {
 			switch {
-				case "CELLAR" == line[0]: {
+			case "CELLAR" == line[0]:
+				{
 					w.Write([]byte("Got Cellar"))
 					cellarName := line[1]
 					currentCellar = account.Cellars[cellarName]
 					if currentCellar == nil {
-						currentCellar = &models.Cellar {
-							ID : account.NextCellarID,
-							NextBeerID : 0,
-							Name : cellarName,
-							Beers : map[string]*models.Beer{},
-							BeersByID : map[int]*models.Beer{},
+						currentCellar = &models.Cellar{
+							ID:         account.NextCellarID,
+							NextBeerID: 0,
+							Name:       cellarName,
+							Beers:      map[string]*models.Beer{},
+							BeersByID:  map[int]*models.Beer{},
 						}
 						account.Cellars[cellarName] = currentCellar
 						account.CellarsByID[account.NextCellarID] = currentCellar
@@ -95,7 +98,8 @@ func importaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 					}
 					break
 				}
-				case "BEER" == line[0]: {
+			case "BEER" == line[0]:
+				{
 					w.Write([]byte("Got Beer"))
 					ubid, err := strconv.Atoi(line[1])
 					if err != nil {
@@ -121,15 +125,15 @@ func importaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 					currentBeer = currentCellar.Beers[beerName]
 					if currentBeer == nil {
 						currentBeer = &models.Beer{
-							UBID : ubid,
-							ID : currentCellar.NextBeerID,
-							Name : beerName,
-							Notes : notes,
-							Brewed : brewed,
-							Added : added,
-							Quantity : quantity,
-							NextTastingID : 0,
-							TastingsByID : map[int]*models.Tasting{},
+							UBID:          ubid,
+							ID:            currentCellar.NextBeerID,
+							Name:          beerName,
+							Notes:         notes,
+							Brewed:        brewed,
+							Added:         added,
+							Quantity:      quantity,
+							NextTastingID: 0,
+							TastingsByID:  map[int]*models.Tasting{},
 						}
 						currentCellar.Beers[beerName] = currentBeer
 						currentCellar.BeersByID[currentCellar.NextBeerID] = currentBeer
@@ -137,7 +141,8 @@ func importaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 					}
 					break
 				}
-				case "TASTING" == line[0]: {
+			case "TASTING" == line[0]:
+				{
 					w.Write([]byte("Got Tasting"))
 					rating, err := strconv.Atoi(line[1])
 					if err != nil {
@@ -154,11 +159,11 @@ func importaccount(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 						}
 					}
 					if currentTasting == nil {
-						currentTasting = &models.Tasting {
-							ID : currentBeer.NextTastingID,
-							Rating : rating,
-							Notes : notes,
-							Date : tasted,
+						currentTasting = &models.Tasting{
+							ID:     currentBeer.NextTastingID,
+							Rating: rating,
+							Notes:  notes,
+							Date:   tasted,
 						}
 						currentBeer.TastingsByID[currentBeer.NextTastingID] = currentTasting
 						currentBeer.NextTastingID++

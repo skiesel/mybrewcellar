@@ -3,12 +3,12 @@
 <div class="container" ng-controller="MyTastingController">
 
 	<div class="row">
-		<a href="/beer?cellar={{ .Cellar.ID }}&id={{ .Beer.ID }}">back</a>
+		<a ng-click="goBack()">back</a>
 		<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 	</div>
 
 	<div class="row" ng-show="!tastingEditingEnabled">
-		<a ng-click="toggleTastingEditing()">(edit tasting)</a>
+		<a ng-click="toggleTastingEditing()" ng-show="{{.Editable}}">(edit tasting)</a>
 	</div>
 	<div class="row" ng-show="!tastingEditingEnabled">
 		
@@ -71,6 +71,17 @@ app.controller("MyTastingController", function($scope){
 	};
 	$scope.init();
 
+	$scope.goBack = function() {
+		var username = getParameterByName("username");
+		if(username && username !== "") {
+			window.location = "/beer?cellar=" + $scope.cellarID + "&id=" + $scope.beerID + "&username="+username;
+		}
+		else {
+			window.location = "/beer?cellar=" + $scope.cellarID + "&id=" + $scope.beerID;
+		}
+	}
+
+{{ if .Editable }}
 	$scope.toggleTastingEditing = function(reset) {
 		if(reset === true) {
 			$scope.thisTasting = $scope.savedTasting;
@@ -104,6 +115,7 @@ app.controller("MyTastingController", function($scope){
 			}
 		);
 	}
+{{ end }}
 });
 
 </script>

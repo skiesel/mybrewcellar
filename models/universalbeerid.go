@@ -10,7 +10,7 @@ type Counter struct {
 }
 
 func getKey(c appengine.Context) *datastore.Key {
-  return datastore.NewKey(c, "Account", "ShardHead", 0, nil)
+  return datastore.NewKey(c, "ShardHead", "ShardHead", 0, nil)
 }
 
 func GetAndIncrementUniversalBeerID(c appengine.Context) (int, error) {

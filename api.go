@@ -277,7 +277,7 @@ func handleNewBeerRequest(c appengine.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	beer := &models.Beer{
-		UBID:					 ubid,
+		UBID:          ubid,
 		ID:            cellar.NextBeerID,
 		Name:          name,
 		Notes:         notes,

@@ -27,6 +27,13 @@
 		$('#alert').removeClass("alert-success").removeClass("alert-info").removeClass("alert-warning").removeClass("alert-danger");
 		$('#alert').addClass(errClass).html(msg).show();
 	}
+
+	function getParameterByName(name) {
+		name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+		var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
+		return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+
 </script>
 
 	</body>

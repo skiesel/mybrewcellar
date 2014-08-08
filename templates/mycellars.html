@@ -2,14 +2,19 @@
 
 <div class="container" ng-controller="MyCellarsController">
 
-	<h1>Welcome {{ .Account.GetUsername }} to your cellars!</h1>
+	<div ng-show="{{.Editable}}">
+		<h1>Welcome {{ .Account.GetUsername }} to your cellars!</h1>
+		<h2>Add a new cellar</h2>
+	</div>
 
-	<h2>Add a new cellar</h2>
+	<div ng-show="!{{.Editable}}">
+		<h1>{{ .Account.GetUsername }}'s cellars!</h1>
+	</div>
 
 
 	<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 
-	<div class="form-horizontal">
+	<div class="form-horizontal" ng-show="{{.Editable}}">
 		<div class="row">
 			<div class="col-lg-12">
 		    <div class="input-group">
@@ -26,7 +31,7 @@
 		<div class="row">
 			<div class="col-lg-12">
 				<h2>Existing cellars</h2>
-				<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+				<a id="edit-toggle" ng-click="toggleEdit()" ng-show="{{.Editable}}">(edit)</a>
 
 				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
 				  
@@ -109,17 +114,6 @@ app.controller("MyCellarsController", function($scope, $filter){
 	$scope.activeSort = $scope.sorts[0];
 	$scope.cellars = $filter('orderBy')($scope.cellars, $scope.activeSort.Field, $scope.activeSort.Decreasing);
 
-	$scope.toggleEdit = function() {
-		if($('#edit-toggle').html() === "(edit)") {
-			$('#edit-toggle').html("(disable edit)")
-			$('.remove-icon').show();
-		}
-		else {
-			$('#edit-toggle').html("(edit)")
-			$('.remove-icon').hide();
-		}
-	};
-
 	$scope.resort = function(sort) {
 		if($scope.activeSort === sort) {
 			$scope.activeSort.Decreasing = !$scope.activeSort.Decreasing;
@@ -132,6 +126,29 @@ app.controller("MyCellarsController", function($scope, $filter){
 		$scope.cellars = $filter('orderBy')($scope.cellars, $scope.activeSort.Field, $scope.activeSort.Decreasing);
 	};
 
+	$scope.gotoCellar = function(cellar) {
+		var username = getParameterByName("username");
+		if(username && username !== "") {
+			window.location = "/cellar?id="+cellar.ID+"&username="+username;
+		}
+		else {
+			window.location = "/cellar?id="+cellar.ID;
+		}
+	};
+
+{{ if .Editable }}
+
+	$scope.toggleEdit = function() {
+		if($('#edit-toggle').html() === "(edit)") {
+			$('#edit-toggle').html("(disable edit)")
+			$('.remove-icon').show();
+		}
+		else {
+			$('#edit-toggle').html("(edit)")
+			$('.remove-icon').hide();
+		}
+	};
+
 	$scope.cancelFancybox = function() {
 		$.fancybox.close();
 	};
@@ -139,10 +156,6 @@ app.controller("MyCellarsController", function($scope, $filter){
 	$scope.deleteCellar = function(cellar) {
 		$scope.selectedCellar = cellar;
 		$("#delete-warning-link").click();
-	};
-
-	$scope.gotoCellar = function(cellar) {
-		window.location = "/cellar?id="+cellar.ID;
 	};
 
 	$scope.clearForm = function() {
@@ -191,6 +204,7 @@ app.controller("MyCellarsController", function($scope, $filter){
 			}
 		);
 	};
+{{ end }}
 	
 });
 </script>

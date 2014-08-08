@@ -3,15 +3,15 @@
 <div class="container" ng-controller="MyBeerController">
 
 	<div class="row">
-		<a href="/cellar?id={{ .Cellar.ID }}">back</a>
+		<a ng-click="goBack()">back</a>
 		<div id="alert" class="alert" role="alert" {{ if eq .Error "" }} style="display:none;" {{ end }}>{{ .Error }}</div>
 	</div>
 
 	<div class="row" ng-show="!beerEditingEnabled">
 		<div class="col-lg-3">
-			<h1>{{"{{"}}thisBeer.Name{{"}}"}}</h1>
-			<a ng-click="toggleBeerEditing()">(edit beer)</a>
-			<a ng-click="openQR()">(generate qr-code)</a>
+			<h1>{{ .Account.GetUsername }}'s {{"{{"}}thisBeer.Name{{"}}"}}</h1>
+			<a ng-click="toggleBeerEditing()" ng-show="{{.Editable}}">(edit beer)</a>
+			<a ng-click="openQR()" ng-show="{{.Editable}}">(generate qr-code)</a>
 			<p>Average Rating: {{"{{"}}thisBeer.AverageRating{{"}}"}}</p>
 			<p>Quantity: {{"{{"}}thisBeer.Quantity{{"}}"}}</p>
 			<p>Brewed: {{"{{"}}thisBeer.Brewed{{"}}"}}</p>
@@ -40,9 +40,9 @@
 		</div>
 	</div>
 
-	<h2>Add new tasting note</h2>
+	<h2 ng-show="{{.Editable}}">Add new tasting note</h2>
 
-	<div class="row">
+	<div class="row" ng-show="{{.Editable}}">
 		<div class="col-lg-12">
 			<div class="form-horizontal">
 
@@ -94,7 +94,7 @@
 		<div class="row">
 			<div class="col-lg-12">
 				<h2>Existing tasting notes</h2>
-				<a id="edit-toggle" ng-click="toggleEdit()">(edit)</a>
+				<a id="edit-toggle" ng-click="toggleEdit()" ng-show="{{.Editable}}">(edit)</a>
 				<div class="btn-group pull-right" data-toggle="buttons" style="padding-bottom:10px;">
 				  <label
 				  	ng-repeat="sort in sorts"
@@ -253,9 +253,27 @@ app.controller("MyBeerController", function($scope, $filter){
 		}
 	};
 
+	$scope.goBack = function() {
+		var username = getParameterByName("username");
+		if(username && username !== "") {
+			window.location = "/cellar?id=" + $scope.cellarID + "&username="+username;
+		}
+		else {
+			window.location = "/cellar?id=" + $scope.cellarID;
+		}
+	}
+
 	$scope.gotoTasting = function(tasting) {
-		window.location = "/tasting?cellar=" + $scope.cellarID + "&beer=" + $scope.thisBeer.ID + "&id=" + tasting.ID;
+		var username = getParameterByName("username");
+		if(username && username !== "") {
+			window.location = "/tasting?cellar=" + $scope.cellarID + "&beer=" + $scope.thisBeer.ID + "&id=" + tasting.ID+"&username="+username;
+		}
+		else {
+			window.location = "/tasting?cellar=" + $scope.cellarID + "&beer=" + $scope.thisBeer.ID + "&id=" + tasting.ID;
+		}
 	};
+
+{{ if .Editable }}
 
 	$scope.toggleBeerEditing = function(reset) {
 		if(reset === true) {
@@ -414,7 +432,7 @@ app.controller("MyBeerController", function($scope, $filter){
 		});
 	}
 	$("#qr-display-link").fancybox();
-
+{{ end }}
 });
 
 </script>

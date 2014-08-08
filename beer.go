@@ -4,11 +4,11 @@ import (
 	"models"
 	//"github.com/skiesel/mybrewcellar/models"
 	"appengine"
+	"appengine/datastore"
+	"fmt"
 	"github.com/mjibson/appstats"
 	"net/http"
-	"appengine/datastore"
 	"strconv"
-	"fmt"
 )
 
 func init() {
@@ -41,16 +41,16 @@ func universalbeer(c appengine.Context, w http.ResponseWriter, r *http.Request) 
 
 	q := datastore.NewQuery("Beer").Filter("UBID =", id)
 	var beers []models.BeerDS
-  beerKeys, err := q.GetAll(c, &beers)
+	beerKeys, err := q.GetAll(c, &beers)
 
-  if len(beers) <= 0 {
+	if len(beers) <= 0 {
 		http.Redirect(w, r, "/mycellars", 303) //303 == See Other
-  }
+	}
 
-  cellar := &models.CellarDS{}
-  cellarKey := beerKeys[0].Parent()
-  datastore.Get(c, cellarKey, cellar)
+	cellar := &models.CellarDS{}
+	cellarKey := beerKeys[0].Parent()
+	datastore.Get(c, cellarKey, cellar)
 
-  url := fmt.Sprintf("/beer?cellar=%d&id=%d", cellar.ID, beers[0].ID)
- 	http.Redirect(w, r, url, 303) //303 == See Other
+	url := fmt.Sprintf("/beer?cellar=%d&id=%d", cellar.ID, beers[0].ID)
+	http.Redirect(w, r, url, 303) //303 == See Other
 }
