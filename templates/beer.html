@@ -8,34 +8,44 @@
 	</div>
 
 	<div class="row" ng-show="!beerEditingEnabled" ng-cloak>
-		<div class="col-lg-3">
-			<h1>{{ .Account.GetUsername }}'s {{"{{"}}thisBeer.Name{{"}}"}}</h1>
-			<a ng-click="toggleBeerEditing()" ng-show="{{.Editable}}">(edit beer)</a>
-			<a ng-click="openQR()" ng-show="{{.Editable}}">(generate qr-code)</a>
-			<p>Average Rating: {{"{{"}}thisBeer.AverageRating{{"}}"}}</p>
-			<p>Quantity: {{"{{"}}thisBeer.Quantity{{"}}"}}</p>
-			<p>Brewed: {{"{{"}}thisBeer.Brewed{{"}}"}}</p>
-			<p>Added: {{"{{"}}thisBeer.Added{{"}}"}}</p>
-			<p>Age: {{"{{"}}thisBeer.Age{{"}}"}}</p>
+		<div class="row">
+			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+				<h1>{{ .Account.GetUsername }}'s {{"{{"}}thisBeer.Name{{"}}"}}</h1>
+			</div>
 		</div>
-		<div class="col-lg-3">
-			<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
+		<div class="row">
+			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+				<a ng-click="toggleBeerEditing()" ng-show="{{.Editable}}">(edit beer)</a>
+				<a ng-click="openQR()" ng-show="{{.Editable}}">(generate qr-code)</a>
+				<p>Average Rating: {{"{{"}}thisBeer.AverageRating{{"}}"}}</p>
+				<p>Quantity: {{"{{"}}thisBeer.Quantity{{"}}"}}</p>
+				<p>Brewed: {{"{{"}}thisBeer.Brewed{{"}}"}}</p>
+				<p>Added: {{"{{"}}thisBeer.Added{{"}}"}}</p>
+				<p>Age: {{"{{"}}thisBeer.Age{{"}}"}}</p>
+			</div>
+			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+				<p ng-show="thisBeer.Notes != ''">"{{"{{"}}thisBeer.Notes{{"}}"}}"</p>
+			</div>
 		</div>
 	</div>
 	
 	<div class="row" ng-show="beerEditingEnabled">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="row">
-				<input class="form-control" type="text" ng-model="thisBeer.Name" />
-				<input class="form-control" type="text" readonly ng-model="thisBeer.Quantity" />
-				<div id="quantity-slider"></div>
-				<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Brewed">
-				<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Added">
-				<textarea class="form-control" ng-model="thisBeer.Notes"></textarea>
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					<input class="form-control" type="text" ng-model="thisBeer.Name" />
+					<input class="form-control" type="text" readonly ng-model="thisBeer.Quantity" />
+					<div id="quantity-slider"></div>
+					<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Brewed">
+					<input class="form-control datepicker" type="text" readonly ng-model="thisBeer.Added">
+					<textarea class="form-control" ng-model="thisBeer.Notes"></textarea>
+				</div>
 			</div>
 			<div class="row" style="text-align:center; padding-top:10px;">
-				<button class="btn btn-default" ng-click="updateBeer()">update</button>
-				<a ng-click="toggleBeerEditing(true)">cancel</a>
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					<button class="btn btn-default" ng-click="updateBeer()">update</button>
+					<a ng-click="toggleBeerEditing(true)">cancel</a>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -43,7 +53,7 @@
 	<h2 ng-show="{{.Editable}}">Add new tasting note</h2>
 
 	<div class="row" ng-show="{{.Editable}}">
-		<div class="col-lg-12">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="form-horizontal">
 
 				<div class="form-group">
