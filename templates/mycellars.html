@@ -54,7 +54,7 @@
 					<div class="list-group">
 						<a class="list-group-item" ng-repeat="cellar in cellars" ng-click="gotoCellar(cellar)">
 							<span class="cellar-name">{{"{{"}}cellar.Name{{"}}"}}</span>
-							<span class="remove-icon badge" style="display:none;" ng-click="deleteCellar(cellar); $event.stopPropagation();">
+							<span class="remove-icon badge" ng-show="cellarEditingEnabled" ng-click="deleteCellar(cellar); $event.stopPropagation();">
 								<span class="glyphicon glyphicon-trash"></span>
 							</span>
 							<span class="badge">{{"{{"}}cellar.BeerCount{{"}}"}}</span>
@@ -85,6 +85,7 @@ $("#delete-warning-link").fancybox();
 app.controller("MyCellarsController", function($scope, $filter){
 
 	$scope.selectedCellar = null;
+	$scope.cellarEditingEnabled = false;
 
 	$scope.cellars = [
 		{{ range .Account.Cellars }}
@@ -139,14 +140,11 @@ app.controller("MyCellarsController", function($scope, $filter){
 {{ if .Editable }}
 
 	$scope.toggleEdit = function() {
-		if($('#edit-toggle').html() === "(edit)") {
+		$scope.cellarEditingEnabled = !$scope.cellarEditingEnabled;
+		if($scope.cellarEditingEnabled)
 			$('#edit-toggle').html("(disable edit)")
-			$('.remove-icon').show();
-		}
-		else {
+		else
 			$('#edit-toggle').html("(edit)")
-			$('.remove-icon').hide();
-		}
 	};
 
 	$scope.cancelFancybox = function() {

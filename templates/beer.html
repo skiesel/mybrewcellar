@@ -120,8 +120,8 @@
 						<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
 				    	<p class="list-group-item-text">Rating: {{"{{"}}tasting.Rating{{"}}"}}</p>
 				    </div>
-						<div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
-							<span class="remove-icon badge pull-right" style="display:none;" ng-click="deleteTasting(tasting)"><span class="glyphicon glyphicon-trash"></span></span>
+						<div class="col-lg-1 col-md-1 col-sm-1 col-xs-1" ng-show="tastingEditingEnabled">
+							<span class="remove-icon badge pull-right" ng-click="deleteTasting(tasting)"><span class="glyphicon glyphicon-trash"></span></span>
 				    	<p class="list-group-item-text tasting-notes-text">{{"{{"}}tasting.Notes{{"}}"}}</p>
 				    </div>
 					</div>
@@ -156,6 +156,7 @@ app.controller("MyBeerController", function($scope, $filter){
 	$scope.selectedTasting = null;
 	$scope.decrementBeer = true;
 	$scope.NewTastingRating = 0;
+	$scope.tastingEditingEnabled = false;
 	$scope.beerEditingEnabled = false;
 
 	{{ with .Beer }}
@@ -305,14 +306,11 @@ app.controller("MyBeerController", function($scope, $filter){
 	};
 
 	$scope.toggleEdit = function() {
-		if($('#edit-toggle').html() === "(edit)") {
+		$scope.tastingEditingEnabled = !$scope.tastingEditingEnabled;
+		if($scope.tastingEditingEnabled)
 			$('#edit-toggle').html("(disable edit)")
-			$('.remove-icon').show();
-		}
-		else {
+		else
 			$('#edit-toggle').html("(edit)")
-			$('.remove-icon').hide();
-		}
 	};
 
 	$scope.cancelFancybox = function() {

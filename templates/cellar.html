@@ -116,11 +116,11 @@
 						    <p class="list-group-item-text">Added: {{"{{"}}beer.Added{{"}}"}}</p>
 						    <p class="list-group-item-text">Age: {{"{{"}}beer.Age{{"}}"}}</p>
 				  		</div>
-				    	<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-				    		<span class="editable badge pull-right" style="display:none;" ng-click="deleteBeer(beer); $event.stopPropagation();">
+				    	<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" ng-show="beerEditingEnabled">
+				    		<span class="badge pull-right" style="" ng-click="deleteBeer(beer); $event.stopPropagation();">
 				    			<span class="glyphicon glyphicon-trash"></span>
 				    		</span>
-				    		<span class="editable badge pull-right" style="display:none; margin-right:5px;" ng-click="transferBeer(beer); $event.stopPropagation();">
+				    		<span class="badge pull-right" style="margin-right:5px;" ng-click="transferBeer(beer); $event.stopPropagation();">
 				    			<span class="glyphicon glyphicon-transfer"></span>
 				    		</span>
 				  		</div>
@@ -169,6 +169,7 @@ app.controller("CellarController", function($scope, $filter){
 	$scope.selectedBeer = null;
 	$scope.transferToCellar = null;
 	$scope.NewBeerQuantity = 1;
+	$scope.beerEditingEnabled = false;
 	$scope.cellarEditingEnabled = false;
 
 	$scope.cellars = [
@@ -325,14 +326,11 @@ app.controller("CellarController", function($scope, $filter){
 	}
 
 	$scope.toggleEditBeers = function() {
-		if($('#edit-toggle').html() === "(edit)") {
+		$scope.beerEditingEnabled = !$scope.beerEditingEnabled;
+		if($scope.beerEditingEnabled)
 			$('#edit-toggle').html("(disable edit)")
-			$('.editable').show();
-		}
-		else {
+		else
 			$('#edit-toggle').html("(edit)")
-			$('.editable').hide();
-		}
 	};
 
 	$scope.cancelFancybox = function() {
